@@ -47,7 +47,7 @@ void QMyPreferences::createLayouts()
 	QVBoxLayout* qvblMainLayout=new QVBoxLayout();
 	qvblMainLayout->addLayout(qglGridLayout);
 	qvblMainLayout->addWidget(qdbbButtonBox);
-	this->setLayout(qvblMainLayout);
+	setLayout(qvblMainLayout);
 }
 //
 void QMyPreferences::slotSavePreferences()

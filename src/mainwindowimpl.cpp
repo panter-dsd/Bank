@@ -2,7 +2,7 @@
 #include <QtSql>
 #include "mainwindowimpl.h"
 //
-MainWindowImpl::MainWindowImpl( QWidget * parent, Qt::WFlags f) 
+MainWindowImpl::MainWindowImpl( QWidget * parent, Qt::WFlags f)
 	: QMainWindow(parent, f)
 {
 	qsetAppSettings=new QSettings(QSettings::IniFormat,QSettings::UserScope,"PanteR","Bank");
@@ -29,7 +29,7 @@ MainWindowImpl::~MainWindowImpl()
 void MainWindowImpl::createControls()
 {
 	qwCentralWidget=new QWidget(this);
-	this->setCentralWidget(qwCentralWidget);
+	setCentralWidget(qwCentralWidget);
 //Header
 	qgbHeaderGroup=new QGroupBox(this);
 	qlOrganizationName=new QLabel(tr("Organization name, OGRN"),this);
@@ -66,7 +66,7 @@ void MainWindowImpl::createControls()
 	qcbVid->addItem(tr("Пособия и другие выплаты по безработице"));
 	qcbVid->addItem(tr("Пособия на детей"));
 	qcbVid->addItem(tr("Прочие выплаты"));
-	
+
 //End header
 	qtwTable=new QTableWidget(this);
 	qtwTable->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -77,11 +77,11 @@ void MainWindowImpl::createControls()
 	Headers << tr("Famil") << tr("Name") << tr("Otch") << tr("Schet") << tr("Money");
 	qtwTable->setHorizontalHeaderLabels(Headers);
 	qsbStatusBar=new QStatusBar(this);
-	this->setStatusBar(qsbStatusBar);
+	setStatusBar(qsbStatusBar);
 	qlSumm=new QLabel(this);
 	qsbStatusBar->addWidget(qlSumm);
 	qmbMainMenu=new QMenuBar(this);
-	this->setMenuBar(qmbMainMenu);
+	setMenuBar(qmbMainMenu);
 }
 //
 void MainWindowImpl::createActions()
@@ -90,63 +90,63 @@ void MainWindowImpl::createActions()
 	qaNew_cmd->setShortcut(QKeySequence::New);
 	qaNew_cmd->setStatusTip(tr("Create new reestr"));
 	qaNew_cmd->setIcon(QIcon(":/share/images/qaNew_cmd.png"));
-	this->addAction(qaNew_cmd);
+	addAction(qaNew_cmd);
 	qaImport_cmd=new QAction(tr("Import"),this);
 	qaImport_cmd->setStatusTip(tr("Import old file format"));
-	this->addAction(qaImport_cmd);
+	addAction(qaImport_cmd);
 	qaOpen_cmd=new QAction(tr("Open"),this);
 	qaOpen_cmd->setShortcut(QKeySequence::Open);
 	qaOpen_cmd->setStatusTip(tr("Open reestr"));
 	qaOpen_cmd->setIcon(QIcon(":/share/images/qaOpen_cmd.png"));
-	this->addAction(qaOpen_cmd);
+	addAction(qaOpen_cmd);
 	qaSave_cmd=new QAction(tr("Save"),this);
 	qaSave_cmd->setShortcut(QKeySequence::Save);
 	qaSave_cmd->setStatusTip(tr("Save reestr"));
 	qaSave_cmd->setIcon(QIcon(":/share/images/qaSave_cmd.png"));
-	this->addAction(qaSave_cmd);
+	addAction(qaSave_cmd);
 	qaSaveAs_cmd=new QAction(tr("Save as..."),this);
 	qaSaveAs_cmd->setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_S);
 	qaSaveAs_cmd->setIcon(QIcon(":/share/images/qaSaveAs_cmd.png"));
-	this->addAction(qaSaveAs_cmd);
+	addAction(qaSaveAs_cmd);
 	qaAdd_cmd=new QAction(tr("Add"),this);
 	qaAdd_cmd->setShortcut(Qt::Key_Insert);
 	qaAdd_cmd->setIcon(QIcon(":/share/images/qaAdd_cmd.png"));
-	this->addAction(qaAdd_cmd);
+	addAction(qaAdd_cmd);
 	qaEdit_cmd=new QAction(tr("Edit"),this);
 	qaEdit_cmd->setShortcut(Qt::Key_F4);
 	qaEdit_cmd->setIcon(QIcon(":/share/images/qaEdit_cmd.png"));
-	this->addAction(qaEdit_cmd);
+	addAction(qaEdit_cmd);
 	qaChangeMoney_cmd=new QAction(tr("Change money"),this);
-	this->addAction(qaChangeMoney_cmd);
+	addAction(qaChangeMoney_cmd);
 	qaDelete_cmd=new QAction(tr("Delete"),this);
 	qaDelete_cmd->setShortcut(Qt::Key_Delete);
 	qaDelete_cmd->setIcon(QIcon(":/share/images/qaDelete_cmd.png"));
-	this->addAction(qaDelete_cmd);
+	addAction(qaDelete_cmd);
 	qaNullMoney_cmd=new QAction(tr("Null money"),this);
-	this->addAction(qaNullMoney_cmd);
+	addAction(qaNullMoney_cmd);
 	qaSaveHeader_cmd=new QAction(tr("Save header"),this);
 	qaSaveHeader_cmd->setStatusTip(tr("Save header as default"));
-	this->addAction(qaSaveHeader_cmd);
+	addAction(qaSaveHeader_cmd);
 	qaAbout_cmd=new QAction(tr("About..."),this);
 	qaAbout_cmd->setStatusTip(tr("About this application"));
 	qaAbout_cmd->setIcon(QIcon(":/share/images/qaAbout_cmd.png"));
-	this->addAction(qaAbout_cmd);
+	addAction(qaAbout_cmd);
 	qaAboutQt_cmd=new QAction(tr("About Qt"),this);
 	qaAboutQt_cmd->setStatusTip(tr("About Qt"));
 	qaAboutQt_cmd->setIcon(QIcon(":/share/images/qaAboutQt_cmd.png"));
-	this->addAction(qaAboutQt_cmd);
+	addAction(qaAboutQt_cmd);
 	qaExit_cmd=new QAction(tr("Exit"),this);
 	qaExit_cmd->setShortcut(Qt::ALT + Qt::Key_X);
 	qaExit_cmd->setStatusTip(tr("Exit from this application"));
 	qaExit_cmd->setIcon(QIcon(":/share/images/qaExit_cmd.png"));
-	this->addAction(qaExit_cmd);
+	addAction(qaExit_cmd);
 	qaOut_cmd=new QAction(tr("Out"),this);
 	qaOut_cmd->setStatusTip(tr("Out reestr on disk"));
-	this->addAction(qaOut_cmd);
+	addAction(qaOut_cmd);
 	qaPreferences_cmd=new QAction(tr("Preferences"),this);
 	qaPreferences_cmd->setStatusTip(tr("Application preferences"));
 	qaPreferences_cmd->setIcon(QIcon(":/share/images/qaPreferences_cmd.png"));
-	this->addAction(qaPreferences_cmd);
+	addAction(qaPreferences_cmd);
 }
 //
 void MainWindowImpl::createMenus()
@@ -162,7 +162,7 @@ void MainWindowImpl::createMenus()
 	qmFile->addAction(qaPreferences_cmd);
 	qmFile->addSeparator();
 	qmFile->addAction(qaExit_cmd);
-	
+
 	QMenu* qmReestr=qmbMainMenu->addMenu(tr("Reestr"));
 	qmReestr->addAction(qaAdd_cmd);
 	qmReestr->addAction(qaEdit_cmd);
@@ -170,7 +170,7 @@ void MainWindowImpl::createMenus()
 	qmReestr->addAction(qaChangeMoney_cmd);
 	qmReestr->addAction(qaNullMoney_cmd);
 	qmReestr->addAction(qaSaveHeader_cmd);
-	
+
 	QMenu* qmHelp=qmbMainMenu->addMenu(tr("Help"));
 	qmHelp->addAction(qaAbout_cmd);
 	qmHelp->addAction(qaAboutQt_cmd);
@@ -197,9 +197,9 @@ void MainWindowImpl::setLayouts()
 	qglHeaderLayout->addWidget(qdePlatDate,4,3);
 	qglHeaderLayout->addWidget(qlVid,5,0);
 	qglHeaderLayout->addWidget(qcbVid,5,1,1,3);
-	
+
 	qgbHeaderGroup->setLayout(qglHeaderLayout);
-	
+
 	QVBoxLayout* qvbMainLayout=new QVBoxLayout();
 	qvbMainLayout->addWidget(qgbHeaderGroup);
 	qvbMainLayout->addWidget(qtwTable);
@@ -224,7 +224,7 @@ void MainWindowImpl::setConnects()
 	connect(qaExit_cmd,SIGNAL(triggered()),this,SLOT(close()));
 	connect(qaOut_cmd,SIGNAL(triggered()),this,SLOT(slotOut()));
 	connect(qaPreferences_cmd,SIGNAL(triggered()),this,SLOT(slotPreferences()));
-	
+
 	connect(qleOrganizationName,SIGNAL(editingFinished ()),this,SLOT(slotCheckReestr()));
 	connect(qleFilialName,SIGNAL(editingFinished ()),this,SLOT(slotCheckReestr()));
 	connect(qleSchetOrganization,SIGNAL(editingFinished ()),this,SLOT(slotCheckReestr()));
@@ -235,10 +235,10 @@ void MainWindowImpl::setConnects()
 //
 void MainWindowImpl::loadSettings()
 {
-	this->move(qsetAppSettings->value("MainWindow/pos",QPoint(0,0)).toPoint());
-	this->resize(qsetAppSettings->value("MainWindow/size",QSize(640,480)).toSize());
+	move(qsetAppSettings->value("MainWindow/pos",QPoint(0,0)).toPoint());
+	resize(qsetAppSettings->value("MainWindow/size",QSize(640,480)).toSize());
 	bool bIsMaximized=qsetAppSettings->value("MainWindow/IsMaximized",false).toBool();
-	if (bIsMaximized) this->setWindowState(Qt::WindowMaximized);
+	if (bIsMaximized) setWindowState(Qt::WindowMaximized);
 	for (int i=0; i<qtwTable->columnCount(); i++)
 	{
 		qtwTable->setColumnWidth(i,qsetAppSettings->value(QString("MainTableColumns/Column_%1").arg(i),50).toInt());
@@ -248,10 +248,10 @@ void MainWindowImpl::loadSettings()
 //
 void MainWindowImpl::saveSettings()
 {
-	if (this->windowState()!=Qt::WindowMaximized)
+	if (windowState()!=Qt::WindowMaximized)
 	{
-		qsetAppSettings->setValue("MainWindow/pos",this->pos());
-		qsetAppSettings->setValue("MainWindow/size",this->size());
+		qsetAppSettings->setValue("MainWindow/pos",pos());
+		qsetAppSettings->setValue("MainWindow/size",size());
 		qsetAppSettings->setValue("MainWindow/IsMaximized",false);
 	}
 	else
@@ -294,13 +294,13 @@ void MainWindowImpl::import(const QString& qsFileName)
 	{
 		if ((i/10)*10==i)
 		{
-			progress.setValue(i); 
+			progress.setValue(i);
 			QCoreApplication::processEvents();
 		}
 		QStringList tmpList=ImportList[i].split("|");
 		if (tmpList.count()!=10)
 		{
-			progress.setValue(progress.maximum()); 
+			progress.setValue(progress.maximum());
 			int rez=QMessageBox::critical(this,
 									tr("Error"),
 									QString(tr("String %1 is not valid\nBreak?")).arg(i+1),
@@ -393,7 +393,7 @@ bool MainWindowImpl::loadFile(const QString& qsFileName)
 	QProgressDialog* qpdProgress=new QProgressDialog(tr("Loading wait..."), tr("No"),0,qsqQuery->value(0).toInt() , this);
 	qpdProgress->setWindowModality(Qt::WindowModal);
 	qsqQuery->clear();
-	
+
 	qsqQuery->prepare("SELECT * FROM "+QFileInfo(qsFileName).baseName());
 	if (!qsqQuery->exec())
 	{
@@ -449,7 +449,7 @@ bool MainWindowImpl::loadFile(const QString& qsFileName)
 	delete qpdProgress;
 	qsqQuery->clear();
 	qsdBase.close();
-	
+
 	qtwTable->removeRow(qtwTable->rowCount()-1);
 	qtwTable->selectRow(0);
 	setCurrentFile(qsFileName);
@@ -506,7 +506,7 @@ bool MainWindowImpl::slotSaveAsReestr()
 							tr("Open file"),
 							qsetAppSettings->value("PATH/OpenPath",QString()).toString(),
 							tr("DBase files (*.dbf)"));
-	if (qsFileName.isEmpty()) 
+	if (qsFileName.isEmpty())
 		return false;
 	qsetAppSettings->setValue("PATH/OpenPath",QFileInfo(qsFileName).absolutePath());
 	return saveFile(qsFileName);
@@ -696,7 +696,7 @@ void MainWindowImpl::slotAdd()
 		item->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
 		qtwTable->setItem(iRow,4,item);
 		qtwTable->selectRow(iRow);
-		this->setWindowModified(true);
+		setWindowModified(true);
 	}
 	delete qmadDialog;
 	slotUpdateActions();
@@ -722,7 +722,7 @@ void MainWindowImpl::slotEdit()
 		qtwTable->item(iRow,2)->setText(qmadDialog->qleOtch->text());
 		qtwTable->item(iRow,3)->setText(qmadDialog->qleSchet->text());
 		qtwTable->item(iRow,4)->setText(QString().setNum(qmadDialog->qleMoney->text().toDouble(),'f',2).replace(',','.'));
-		this->setWindowModified(true);
+		setWindowModified(true);
 	}
 	delete qmadDialog;
 	slotUpdateActions();
@@ -736,7 +736,7 @@ void MainWindowImpl::slotDelete()
 	qtwTable->removeRow(iRow);
 	if (qtwTable->currentIndex().isValid())
 		qtwTable->selectRow(qtwTable->currentIndex().row());
-	this->setWindowModified(true);
+	setWindowModified(true);
 	slotUpdateActions();
 	checkReestr();
 }
@@ -760,7 +760,7 @@ void MainWindowImpl::slotChangeMoney()
 	if (qmadDialog->exec())
 	{
 		qtwTable->item(iRow,4)->setText(QString().setNum(qmadDialog->qleMoney->text().toDouble(),'f',2).replace(',','.'));
-		this->setWindowModified(true);
+		setWindowModified(true);
 	}
 	delete qmadDialog;
 	slotUpdateActions();
@@ -773,7 +773,7 @@ void MainWindowImpl::slotNullMoney()
 	{
 		qtwTable->item(i,4)->setText("0.00");
 	}
-	this->setWindowModified(true);
+	setWindowModified(true);
 	slotUpdateActions();
 	checkReestr();
 }
@@ -817,7 +817,7 @@ int MainWindowImpl::checkReestr()
 	else
 		qlePlatNumber->setPalette(QApplication::palette());
 
-	if (qtwTable->rowCount()<=0) 
+	if (qtwTable->rowCount()<=0)
 		iValid=1;
 	for (int i=0; i<qtwTable->rowCount(); i++)
 	{
@@ -919,20 +919,20 @@ void MainWindowImpl::createToolBars()
 	qtbFileToolbar->addAction(qaOut_cmd);
 	qtbFileToolbar->addAction(qaImport_cmd);
 	qtbFileToolbar->addAction(qaPreferences_cmd);
-	this->addToolBar(qtbFileToolbar);
-	
+	addToolBar(qtbFileToolbar);
+
 	qtbReestrToolbar=new QToolBar(tr("Reestr"));
 	qtbReestrToolbar->addAction(qaAdd_cmd);
 	qtbReestrToolbar->addAction(qaEdit_cmd);
 	qtbReestrToolbar->addAction(qaDelete_cmd);
 	qtbReestrToolbar->addAction(qaChangeMoney_cmd);
 	qtbReestrToolbar->addAction(qaNullMoney_cmd);
-	this->addToolBar(qtbReestrToolbar);
+	addToolBar(qtbReestrToolbar);
 }
 //
 bool MainWindowImpl::okToContinue()
 {
-	if (this->isWindowModified())
+	if (isWindowModified())
 	{
 		int res=QMessageBox::warning(this,
 								QApplication::applicationName(),
@@ -961,11 +961,11 @@ void MainWindowImpl::slotNewReestr()
 void MainWindowImpl::setCurrentFile(const QString& qsFileName)
 {
 	qsCurrentFile=qsFileName;
-	this->setWindowModified(false);
+	setWindowModified(false);
 	QString qsShowName=tr("Untitled");
 	if (!qsCurrentFile.isEmpty())
 		qsShowName=QFileInfo(qsCurrentFile).fileName();
-	this->setWindowTitle(tr("%1 %2[*]").arg(QApplication::applicationName()).arg(qsShowName));
+	setWindowTitle(tr("%1 %2[*]").arg(QApplication::applicationName()).arg(qsShowName));
 	slotUpdateActions();
 }
 //
@@ -1003,7 +1003,7 @@ void MainWindowImpl::slotOut()
 		dir.cdUp();
 		dir.cd("archives");
 	}
-	bool bIsWindowModified=this->isWindowModified();
+	bool bIsWindowModified=isWindowModified();
 	QString qsCurFile=qsCurrentFile;
 	QFileInfo qfiOutFile(dir.absolutePath()+
 						"/"+
@@ -1013,7 +1013,7 @@ void MainWindowImpl::slotOut()
 	if (saveFile(qfiOutFile.filePath()))
 	{
 		setCurrentFile(qsCurFile);
-		this->setWindowModified(bIsWindowModified);
+		setWindowModified(bIsWindowModified);
 		QString qsOutName=qsetAppSettings->value("PATH/OutPath",QString()).toString()+
 							QDir::separator()+
 							"t1820"+

@@ -46,7 +46,7 @@ void QMyAddDialog::setLayouts()
 	qvblLayout->addLayout(qglLayout);
 	qvblLayout->addWidget(qdbbButtons);
 	
-	this->setLayout(qvblLayout);
+	setLayout(qvblLayout);
 }
 //
 void QMyAddDialog::slotAccept()
@@ -54,7 +54,7 @@ void QMyAddDialog::slotAccept()
 	int checkRez=slotCheck();
 	switch (checkRez)
 	{
-	case 0: {this->accept(); break;}
+	case 0: {accept(); break;}
 	case 1:
 		{
 			QMessageBox::critical(this,
@@ -70,7 +70,7 @@ void QMyAddDialog::slotAccept()
 						QMessageBox::Yes,
 						QMessageBox::No);
 			if (rez==QMessageBox::Yes)
-			this->accept();
+			accept();
 			break;
 		}
 	}
