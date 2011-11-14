@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/" >
+        <file>share/images/main.ico</file>
+        <file>share/images/qaAboutQt_cmd.png</file>
+        <file>share/images/qaAbout_cmd.png</file>
+        <file>share/images/qaAdd_cmd.png</file>
+        <file>share/images/qaDelete_cmd.png</file>
+        <file>share/images/qaEdit_cmd.png</file>
+        <file>share/images/qaExit_cmd.png</file>
+        <file>share/images/qaNew_cmd.png</file>
+        <file>share/images/qaOpen_cmd.png</file>
+        <file>share/images/qaPreferences_cmd.png</file>
+        <file>share/images/qaSaveAs_cmd.png</file>
+        <file>share/images/qaSave_cmd.png</file>
+    </qresource>
+</RCC>

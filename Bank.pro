@@ -1,0 +1,11 @@
+TEMPLATE = app
+QT = gui core sql
+CONFIG += qt release warn_on
+DESTDIR = bin
+OBJECTS_DIR = build
+MOC_DIR = build
+UI_DIR = build
+HEADERS = src/qmypreferences.h src/qmyadddialog.h src/mainwindowimpl.h
+SOURCES = src/qmypreferences.cpp src/qmyadddialog.cpp src/mainwindowimpl.cpp src/main.cpp
+RESOURCES = resource.qrc
+RC_FILE += Bank.rc
