@@ -1,6 +1,6 @@
 #ifndef MAINWINDOWIMPL_H
 #define MAINWINDOWIMPL_H
-//
+
 class QWidget;
 class QTableWidget;
 class QTableWidgetItem;
@@ -17,75 +17,74 @@ class QComboBox;
 class QBrush;
 class QPalette;
 class QSpinBox;
-#include <QSqlDatabase>
-#include <QMainWindow>
-#include "qmyadddialog.h"
-#include "qmypreferences.h"
-//
+
+#include <QtGui/QMainWindow>
+
 class MainWindowImpl : public QMainWindow
 {
 Q_OBJECT
 private:
-	QSqlDatabase						qsdBase;
-	QWidget*								qwCentralWidget;
-	QTableWidget*					qtwTable;
-	QStatusBar*						qsbStatusBar;
-	QToolBar*							qtbFileToolbar;
-	QToolBar*							qtbReestrToolbar;
-	QMenuBar*							qmbMainMenu;
-	QLabel*								qlSumm;
+	QTableWidget*					table_;
+	QStatusBar*						statusBar_;
+	QToolBar*							fileToolbar_;
+	QToolBar*							reestrToolbar_;
+	QMenuBar*							mainMenu_;
+	QLabel*								sumLabel_;
 
-	QGroupBox*						qgbHeaderGroup;
-	QLabel*								qlOrganizationName;
-	QLineEdit*							qleOrganizationName;
-	QLabel*								qlReestrNumber;
-	QSpinBox*							qsbReestrNumber;
-	QLabel*								qlFilialName;
-	QLineEdit*							qleFilialName;
-	QLabel*								qlSchetOrganization;
-	QLineEdit*							qleSchetOrganization;
-	QLabel*								qlDogovorNumber;
-	QLineEdit*							qleDogovorNumber;
-	QLabel*								qlDogovorDate;
-	QDateEdit*							qdeDogovorDate;
-	QLabel*								qlPlatNumber;
-	QLineEdit*							qlePlatNumber;
-	QLabel*								qlPlatDate;
-	QDateEdit*							qdePlatDate;
-	QLabel*								qlVid;
-	QComboBox*						qcbVid;
+	QGroupBox*						headerGroup_;
+	QLabel*								organizationNameLabel_;
+	QLineEdit*							organizationNameEdit_;
+	QLabel*								reestrNumberLabel_;
+	QSpinBox*							reestrNumberEdit_;
+	QLabel*								filialNameLabel_;
+	QLineEdit*							filialNameEdit_;
+	QLabel*								schetOrganizationLabel_;
+	QLineEdit*							schetOrganizationEdit_;
+	QLabel*								dogovorNumberLabel_;
+	QLineEdit*							dogovorNumberEdit_;
+	QLabel*								dogovorDateLabel_;
+	QDateEdit*							dogovorDateEdit_;
+	QLabel*								platNumberLabel_;
+	QLineEdit*							platNumberEdit_;
+	QLabel*								platDateLabel_;
+	QDateEdit*							platDateEdit_;
+	QLabel*								vidLabel_;
+	QComboBox*						vidEdit_;
 
-	QAction*								qaNew_cmd;//
-	QAction*								qaImport_cmd;
-	QAction*								qaOpen_cmd;//
-	QAction*								qaSave_cmd;//
-	QAction*								qaSaveAs_cmd;//
-	QAction*								qaAdd_cmd;//
-	QAction*								qaEdit_cmd;//
-	QAction*								qaDelete_cmd;//
-	QAction*								qaChangeMoney_cmd;
-	QAction*								qaNullMoney_cmd;
-	QAction*								qaSaveHeader_cmd;
-	QAction*								qaAbout_cmd;//
-	QAction*								qaAboutQt_cmd;//
-	QAction*								qaExit_cmd;//
-	QAction*								qaOut_cmd;
-	QAction*								qaPreferences_cmd;//
-	
-	QSettings*							qsetAppSettings;
-	QString								qsCurrentFile;
-	QString								qsVersion;
-	
-	QMyPreferences*				qmpPreferences;
-	
+	QAction*								actionNew_;
+	QAction*								actionImport_;
+	QAction*								actionOpen_;
+	QAction*								actionSave_;
+	QAction*								actionSaveAs_;
+	QAction*								actionAdd_;
+	QAction*								actionEdit_;
+	QAction*								actionDelete_;
+	QAction*								actionChangeMoney_;
+	QAction*								actionNullMoney_;
+	QAction*								actionSaveHeader_;
+	QAction*								actionAbout_;
+	QAction*								actionAboutQt_;
+	QAction*								actionExit_;
+	QAction*								actionOut_;
+	QAction*								actionPreferences_;
+
+	QSettings*							applicationSettings_;
+	QString								currentFile_;
+	QString								version_;
+
 protected:
 	void closeEvent(QCloseEvent* event);
+
 public:
 	MainWindowImpl( QWidget * parent = 0, Qt::WFlags f = 0 );
-	void setVersion(const QString& qsAppVersion) {qsVersion=qsAppVersion;}
 	~MainWindowImpl();
-	bool loadFile(const QString& qsFileName);
-	void import(const QString& qsFileName );
+
+	void setVersion(const QString& version) {
+		version_=version;
+	}
+	bool loadFile(const QString& fileName);
+	void import(const QString& fileName );
+
 private:
 	void createControls();
 	void createActions();
@@ -95,47 +94,49 @@ private:
 	void setLayouts();
 	void setConnects();
 	bool okToContinue();
-	
-	double getSumm();
+
+	double getSum();
 	void loadSettings();
 	void saveSettings();
 	void loadHeader();
-	bool saveFile(const QString& qsFileName);
-	void setCurrentFile(const QString& qsFileName);
+	bool saveFile(const QString& fileName);
+	void setCurrentFile(const QString& fileName);
 	int checkReestr();
-	bool checkSchet(const QString& qsSchet);
-	void setErrorPalette(QWidget* qwWidget)
-	{
+	bool checkSchet(const QString& schet);
+	void setErrorPalette(QWidget* widget) {
 		QBrush brush(Qt::red);
-		QPalette palette=qwWidget->palette();
-		palette.setBrush(QPalette::Active, QPalette::Base, brush); 
-		qwWidget->setPalette(palette);
+		QPalette palette=widget->palette();
+		palette.setBrush(QPalette::Active, QPalette::Base, brush);
+		widget->setPalette(palette);
 	}
-	void setWarningPalette(QWidget* qwWidget)
-	{
+	void setWarningPalette(QWidget* widget) {
 		QBrush brush(Qt::yellow);
-		QPalette palette=qwWidget->palette();
-		palette.setBrush(QPalette::Active, QPalette::Base, brush); 
-		qwWidget->setPalette(palette);
+		QPalette palette=widget->palette();
+		palette.setBrush(QPalette::Active, QPalette::Base, brush);
+		widget->setPalette(palette);
 	}
-private slots:
-	void slotNewReestr();
-	void slotOpenReestr();
-	bool slotSaveReestr();
-	bool slotSaveAsReestr();
-	void slotAbout();
-	void slotImport();
-	void slotUpdateActions();
-	void slotChangeMoney();
-	void slotSaveHeader();
-	void slotAdd();
-	void slotEdit();
-	void slotDelete();
-	void slotNullMoney();
-	bool slotCheckReestr() {checkReestr(); return true;};
-	void slotItemActivated(QTableWidgetItem* item) {slotChangeMoney();}
-	void slotOut();
-	void slotPreferences();
+
+private Q_SLOTS:
+	void newReestr();
+	void openReestr();
+	bool saveReestr();
+	bool saveAsReestr();
+	void about();
+	void import();
+	void updateActions();
+	void changeMoney();
+	void saveHeader();
+	void addRecord();
+	void editRecord();
+	void deleteRecord();
+	void nullMoney();
+	bool onCheckReestr() {
+		checkReestr();
+		return true;
+	}
+	void itemActivated(QTableWidgetItem* item) {changeMoney();}
+	void out();
+	void preferences();
 };
 #endif
 

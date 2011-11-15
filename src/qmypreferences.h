@@ -6,41 +6,43 @@ class QLineEdit;
 class QPushButton;
 class QDialogButtonBox;
 class QSettings;
-//
+
 class QMyPreferences: public QDialog
 {
-Q_OBJECT
+	Q_OBJECT
+
 private:
-	QLabel*						qlOpenPath;
-	QLineEdit*					qleOpenPath;
-	QPushButton*				qpbOpenPath;
-	QLabel*						qlImportPath;
-	QLineEdit*					qleImportPath;
-	QPushButton*				qpbImportPath;
-	QLabel*						qlArchivesPath;
-	QLineEdit*					qleArchivesPath;
-	QPushButton*				qpbArchivesPath;
-	QLabel*						qlOutPath;
-	QLineEdit*					qleOutPath;
-	QPushButton*				qpbOutPath;
-	
-	QDialogButtonBox*	qdbbButtonBox;
-	
-	QSettings*					qsetAppSettings;
+	QLabel*						openPathLabel_;
+	QLineEdit*					openPathEdit_;
+	QPushButton*				openPathButton_;
+	QLabel*						importPathLabel_;
+	QLineEdit*					importPathEdit_;
+	QPushButton*				importPathButton_;
+	QLabel*						archivesPathLabel_;
+	QLineEdit*					archivesPathEdit_;
+	QPushButton*				archivesPathButton_;
+	QLabel*						outPathLabel_;
+	QLineEdit*					outPathEdit_;
+	QPushButton*				outPathButton_;
+
+	QDialogButtonBox*	buttons;
+
+	QSettings*					applicationSettings_;
 
 public:
 	QMyPreferences(QWidget * parent = 0, Qt::WindowFlags f = Qt::WindowSystemMenuHint);
+
 private:
 	void createWidgets();
 	void createLayouts();
-	void savePreferences();
 	void createConnects();
-private slots:
-	void slotSavePreferences();
-	void slotSetOpenPath();
-	void slotSetImportPath();
-	void slotSetArchivesPath();
-	void slotSetOutPath();
+
+private Q_SLOTS:
+	void savePreferences();
+	void setOpenPath();
+	void setImportPath();
+	void setArchivesPath();
+	void setOutPath();
 };
 
 #endif /*QMYPREFERENCES_H_*/

@@ -1,12 +1,38 @@
-#include <QtGui>
-#include <QtSql>
+#include <QtCore/QSettings>
+#include <QtCore/QTextStream>
+
+#include <QtGui/QLabel>
+#include <QtGui/QGroupBox>
+#include <QtGui/QLineEdit>
+#include <QtGui/QSpinBox>
+#include <QtGui/QDateEdit>
+#include <QtGui/QTableWidget>
+#include <QtGui/QHeaderView>
+#include <QtGui/QStatusBar>
+#include <QtGui/QMenuBar>
+#include <QtGui/QGridLayout>
+#include <QtGui/QMessageBox>
+#include <QtGui/QProgressDialog>
+#include <QtGui/QFileDialog>
+#include <QtGui/QApplication>
+#include <QtGui/QCloseEvent>
+#include <QtGui/QToolBar>
+#include <QtGui/QComboBox>
+
+#include <QtSql/QSqlDatabase>
+#include <QtSql/QSqlError>
+#include <QtSql/QSqlQuery>
+
+#include "qmyadddialog.h"
+#include "qmypreferences.h"
+
 #include "mainwindowimpl.h"
-//
+
 MainWindowImpl::MainWindowImpl( QWidget * parent, Qt::WFlags f)
 	: QMainWindow(parent, f)
 {
-	qsetAppSettings=new QSettings(QSettings::IniFormat,QSettings::UserScope,"PanteR","Bank");
-	qsdBase=QSqlDatabase::addDatabase("QODBC");
+	applicationSettings_=new QSettings(QSettings::IniFormat,QSettings::UserScope,"PanteR","Bank");
+	QSqlDatabase::addDatabase("QODBC");
 	createControls();
 	setLayouts();
 	createActions();
@@ -17,254 +43,253 @@ MainWindowImpl::MainWindowImpl( QWidget * parent, Qt::WFlags f)
 	loadHeader();
 	setConnects();
 	setCurrentFile("");
-	slotUpdateActions();
+	updateActions();
 	checkReestr();
 }
-//
+
 MainWindowImpl::~MainWindowImpl()
 {
 	saveSettings();
 }
-//
+
 void MainWindowImpl::createControls()
 {
-	qwCentralWidget=new QWidget(this);
-	setCentralWidget(qwCentralWidget);
+	setCentralWidget(new QWidget(this));
 //Header
-	qgbHeaderGroup=new QGroupBox(this);
-	qlOrganizationName=new QLabel(tr("Organization name, OGRN"),this);
-	qleOrganizationName=new QLineEdit(this);
-	qleOrganizationName->setMaxLength(30);
-	qlReestrNumber=new QLabel(tr("Number reestr"),this);
-	qsbReestrNumber=new QSpinBox(this);
-	qsbReestrNumber->setRange(1,999);
-	qsbReestrNumber->setAlignment(Qt::AlignRight);
-	qlFilialName=new QLabel(tr("Filial name, number"),this);
-	qleFilialName=new QLineEdit(this);
-	qleFilialName->setMaxLength(30);
-	qlSchetOrganization=new QLabel(tr("Organization schet"),this);
-	qleSchetOrganization=new QLineEdit(this);
-	qleSchetOrganization->setValidator(new QRegExpValidator(QRegExp("[0-9]{1,20}"),this));
-	qlDogovorNumber=new QLabel(tr("Number dogovor"),this);
-	qleDogovorNumber=new QLineEdit(this);
-	qleDogovorNumber->setValidator(new QRegExpValidator(QRegExp("[0-9]{1,8}"),this));
-	qlDogovorDate=new QLabel(tr("Date dogovor"),this);
-	qdeDogovorDate=new QDateEdit(this);
-	qdeDogovorDate->setCalendarPopup(true);
-	qlPlatNumber=new QLabel(tr("Number plat"),this);
-	qlePlatNumber=new QLineEdit(this);
-	qlePlatNumber->setValidator(new QRegExpValidator(QRegExp("[0-9]{1,6}"),this));
-	qlPlatDate=new QLabel(tr("Date plat"),this);
-	qdePlatDate=new QDateEdit(this);
-	qdePlatDate->setCalendarPopup(true);
-	qlVid=new QLabel(tr("Vid oplata"),this);
-	qcbVid=new QComboBox(this);
-	qcbVid->addItem(tr("Заработная плата"));
-	qcbVid->addItem(tr("Стипендия учащимся"));
-	qcbVid->addItem(tr("Пенсия социальная"));
-	qcbVid->addItem(tr("Пенсия негосударственных пенсионных фондов (кроме НПФ Сбербанка)"));
-	qcbVid->addItem(tr("Пособия и другие выплаты по безработице"));
-	qcbVid->addItem(tr("Пособия на детей"));
-	qcbVid->addItem(tr("Прочие выплаты"));
+	headerGroup_=new QGroupBox(this);
+	organizationNameLabel_=new QLabel(tr("Organization name, OGRN"),this);
+	organizationNameEdit_=new QLineEdit(this);
+	organizationNameEdit_->setMaxLength(30);
+	reestrNumberLabel_=new QLabel(tr("Number reestr"),this);
+	reestrNumberEdit_=new QSpinBox(this);
+	reestrNumberEdit_->setRange(1,999);
+	reestrNumberEdit_->setAlignment(Qt::AlignRight);
+	filialNameLabel_=new QLabel(tr("Filial name, number"),this);
+	filialNameEdit_=new QLineEdit(this);
+	filialNameEdit_->setMaxLength(30);
+	schetOrganizationLabel_=new QLabel(tr("Organization schet"),this);
+	schetOrganizationEdit_=new QLineEdit(this);
+	schetOrganizationEdit_->setValidator(new QRegExpValidator(QRegExp("[0-9]{1,20}"),this));
+	dogovorNumberLabel_=new QLabel(tr("Number dogovor"),this);
+	dogovorNumberEdit_=new QLineEdit(this);
+	dogovorNumberEdit_->setValidator(new QRegExpValidator(QRegExp("[0-9]{1,8}"),this));
+	dogovorDateLabel_=new QLabel(tr("Date dogovor"),this);
+	dogovorDateEdit_=new QDateEdit(this);
+	dogovorDateEdit_->setCalendarPopup(true);
+	platNumberLabel_=new QLabel(tr("Number plat"),this);
+	platNumberEdit_=new QLineEdit(this);
+	platNumberEdit_->setValidator(new QRegExpValidator(QRegExp("[0-9]{1,6}"),this));
+	platDateLabel_=new QLabel(tr("Date plat"),this);
+	platDateEdit_=new QDateEdit(this);
+	platDateEdit_->setCalendarPopup(true);
+	vidLabel_=new QLabel(tr("Vid oplata"),this);
+	vidEdit_=new QComboBox(this);
+	vidEdit_->addItem(tr("Заработная плата"));
+	vidEdit_->addItem(tr("Стипендия учащимся"));
+	vidEdit_->addItem(tr("Пенсия социальная"));
+	vidEdit_->addItem(tr("Пенсия негосударственных пенсионных фондов (кроме НПФ Сбербанка)"));
+	vidEdit_->addItem(tr("Пособия и другие выплаты по безработице"));
+	vidEdit_->addItem(tr("Пособия на детей"));
+	vidEdit_->addItem(tr("Прочие выплаты"));
 
 //End header
-	qtwTable=new QTableWidget(this);
-	qtwTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-	qtwTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-	qtwTable->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
-	qtwTable->setColumnCount(5);
+	table_=new QTableWidget(this);
+	table_->setSelectionBehavior(QAbstractItemView::SelectRows);
+	table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
+	table_->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+	table_->setColumnCount(5);
 	QStringList Headers;
 	Headers << tr("Famil") << tr("Name") << tr("Otch") << tr("Schet") << tr("Money");
-	qtwTable->setHorizontalHeaderLabels(Headers);
-	qsbStatusBar=new QStatusBar(this);
-	setStatusBar(qsbStatusBar);
-	qlSumm=new QLabel(this);
-	qsbStatusBar->addWidget(qlSumm);
-	qmbMainMenu=new QMenuBar(this);
-	setMenuBar(qmbMainMenu);
+	table_->setHorizontalHeaderLabels(Headers);
+	statusBar_=new QStatusBar(this);
+	setStatusBar(statusBar_);
+	sumLabel_=new QLabel(this);
+	statusBar_->addWidget(sumLabel_);
+	mainMenu_=new QMenuBar(this);
+	setMenuBar(mainMenu_);
 }
-//
+
 void MainWindowImpl::createActions()
 {
-	qaNew_cmd=new QAction(tr("New"),this);
-	qaNew_cmd->setShortcut(QKeySequence::New);
-	qaNew_cmd->setStatusTip(tr("Create new reestr"));
-	qaNew_cmd->setIcon(QIcon(":/share/images/qaNew_cmd.png"));
-	addAction(qaNew_cmd);
-	qaImport_cmd=new QAction(tr("Import"),this);
-	qaImport_cmd->setStatusTip(tr("Import old file format"));
-	addAction(qaImport_cmd);
-	qaOpen_cmd=new QAction(tr("Open"),this);
-	qaOpen_cmd->setShortcut(QKeySequence::Open);
-	qaOpen_cmd->setStatusTip(tr("Open reestr"));
-	qaOpen_cmd->setIcon(QIcon(":/share/images/qaOpen_cmd.png"));
-	addAction(qaOpen_cmd);
-	qaSave_cmd=new QAction(tr("Save"),this);
-	qaSave_cmd->setShortcut(QKeySequence::Save);
-	qaSave_cmd->setStatusTip(tr("Save reestr"));
-	qaSave_cmd->setIcon(QIcon(":/share/images/qaSave_cmd.png"));
-	addAction(qaSave_cmd);
-	qaSaveAs_cmd=new QAction(tr("Save as..."),this);
-	qaSaveAs_cmd->setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_S);
-	qaSaveAs_cmd->setIcon(QIcon(":/share/images/qaSaveAs_cmd.png"));
-	addAction(qaSaveAs_cmd);
-	qaAdd_cmd=new QAction(tr("Add"),this);
-	qaAdd_cmd->setShortcut(Qt::Key_Insert);
-	qaAdd_cmd->setIcon(QIcon(":/share/images/qaAdd_cmd.png"));
-	addAction(qaAdd_cmd);
-	qaEdit_cmd=new QAction(tr("Edit"),this);
-	qaEdit_cmd->setShortcut(Qt::Key_F4);
-	qaEdit_cmd->setIcon(QIcon(":/share/images/qaEdit_cmd.png"));
-	addAction(qaEdit_cmd);
-	qaChangeMoney_cmd=new QAction(tr("Change money"),this);
-	addAction(qaChangeMoney_cmd);
-	qaDelete_cmd=new QAction(tr("Delete"),this);
-	qaDelete_cmd->setShortcut(Qt::Key_Delete);
-	qaDelete_cmd->setIcon(QIcon(":/share/images/qaDelete_cmd.png"));
-	addAction(qaDelete_cmd);
-	qaNullMoney_cmd=new QAction(tr("Null money"),this);
-	addAction(qaNullMoney_cmd);
-	qaSaveHeader_cmd=new QAction(tr("Save header"),this);
-	qaSaveHeader_cmd->setStatusTip(tr("Save header as default"));
-	addAction(qaSaveHeader_cmd);
-	qaAbout_cmd=new QAction(tr("About..."),this);
-	qaAbout_cmd->setStatusTip(tr("About this application"));
-	qaAbout_cmd->setIcon(QIcon(":/share/images/qaAbout_cmd.png"));
-	addAction(qaAbout_cmd);
-	qaAboutQt_cmd=new QAction(tr("About Qt"),this);
-	qaAboutQt_cmd->setStatusTip(tr("About Qt"));
-	qaAboutQt_cmd->setIcon(QIcon(":/share/images/qaAboutQt_cmd.png"));
-	addAction(qaAboutQt_cmd);
-	qaExit_cmd=new QAction(tr("Exit"),this);
-	qaExit_cmd->setShortcut(Qt::ALT + Qt::Key_X);
-	qaExit_cmd->setStatusTip(tr("Exit from this application"));
-	qaExit_cmd->setIcon(QIcon(":/share/images/qaExit_cmd.png"));
-	addAction(qaExit_cmd);
-	qaOut_cmd=new QAction(tr("Out"),this);
-	qaOut_cmd->setStatusTip(tr("Out reestr on disk"));
-	addAction(qaOut_cmd);
-	qaPreferences_cmd=new QAction(tr("Preferences"),this);
-	qaPreferences_cmd->setStatusTip(tr("Application preferences"));
-	qaPreferences_cmd->setIcon(QIcon(":/share/images/qaPreferences_cmd.png"));
-	addAction(qaPreferences_cmd);
+	actionNew_=new QAction(tr("New"),this);
+	actionNew_->setShortcut(QKeySequence::New);
+	actionNew_->setStatusTip(tr("Create new reestr"));
+	actionNew_->setIcon(QIcon(":/share/images/qaNew_cmd.png"));
+	addAction(actionNew_);
+	actionImport_=new QAction(tr("Import"),this);
+	actionImport_->setStatusTip(tr("Import old file format"));
+	addAction(actionImport_);
+	actionOpen_=new QAction(tr("Open"),this);
+	actionOpen_->setShortcut(QKeySequence::Open);
+	actionOpen_->setStatusTip(tr("Open reestr"));
+	actionOpen_->setIcon(QIcon(":/share/images/qaOpen_cmd.png"));
+	addAction(actionOpen_);
+	actionSave_=new QAction(tr("Save"),this);
+	actionSave_->setShortcut(QKeySequence::Save);
+	actionSave_->setStatusTip(tr("Save reestr"));
+	actionSave_->setIcon(QIcon(":/share/images/qaSave_cmd.png"));
+	addAction(actionSave_);
+	actionSaveAs_=new QAction(tr("Save as..."),this);
+	actionSaveAs_->setShortcut(Qt::CTRL+Qt::SHIFT+Qt::Key_S);
+	actionSaveAs_->setIcon(QIcon(":/share/images/qaSaveAs_cmd.png"));
+	addAction(actionSaveAs_);
+	actionAdd_=new QAction(tr("Add"),this);
+	actionAdd_->setShortcut(Qt::Key_Insert);
+	actionAdd_->setIcon(QIcon(":/share/images/qaAdd_cmd.png"));
+	addAction(actionAdd_);
+	actionEdit_=new QAction(tr("Edit"),this);
+	actionEdit_->setShortcut(Qt::Key_F4);
+	actionEdit_->setIcon(QIcon(":/share/images/qaEdit_cmd.png"));
+	addAction(actionEdit_);
+	actionChangeMoney_=new QAction(tr("Change money"),this);
+	addAction(actionChangeMoney_);
+	actionDelete_=new QAction(tr("Delete"),this);
+	actionDelete_->setShortcut(Qt::Key_Delete);
+	actionDelete_->setIcon(QIcon(":/share/images/qaDelete_cmd.png"));
+	addAction(actionDelete_);
+	actionNullMoney_=new QAction(tr("Null money"),this);
+	addAction(actionNullMoney_);
+	actionSaveHeader_=new QAction(tr("Save header"),this);
+	actionSaveHeader_->setStatusTip(tr("Save header as default"));
+	addAction(actionSaveHeader_);
+	actionAbout_=new QAction(tr("About..."),this);
+	actionAbout_->setStatusTip(tr("About this application"));
+	actionAbout_->setIcon(QIcon(":/share/images/qaAbout_cmd.png"));
+	addAction(actionAbout_);
+	actionAboutQt_=new QAction(tr("About Qt"),this);
+	actionAboutQt_->setStatusTip(tr("About Qt"));
+	actionAboutQt_->setIcon(QIcon(":/share/images/qaAboutQt_cmd.png"));
+	addAction(actionAboutQt_);
+	actionExit_=new QAction(tr("Exit"),this);
+	actionExit_->setShortcut(Qt::ALT + Qt::Key_X);
+	actionExit_->setStatusTip(tr("Exit from this application"));
+	actionExit_->setIcon(QIcon(":/share/images/qaExit_cmd.png"));
+	addAction(actionExit_);
+	actionOut_=new QAction(tr("Out"),this);
+	actionOut_->setStatusTip(tr("Out reestr on disk"));
+	addAction(actionOut_);
+	actionPreferences_=new QAction(tr("Preferences"),this);
+	actionPreferences_->setStatusTip(tr("Application preferences"));
+	actionPreferences_->setIcon(QIcon(":/share/images/qaPreferences_cmd.png"));
+	addAction(actionPreferences_);
 }
-//
+
 void MainWindowImpl::createMenus()
 {
-	QMenu* qmFile=qmbMainMenu->addMenu(tr("File"));
-	qmFile->addAction(qaNew_cmd);
-	qmFile->addAction(qaOpen_cmd);
-	qmFile->addAction(qaSave_cmd);
-	qmFile->addAction(qaSaveAs_cmd);
-	qmFile->addAction(qaOut_cmd);
-	qmFile->addAction(qaImport_cmd);
+	QMenu* qmFile=mainMenu_->addMenu(tr("File"));
+	qmFile->addAction(actionNew_);
+	qmFile->addAction(actionOpen_);
+	qmFile->addAction(actionSave_);
+	qmFile->addAction(actionSaveAs_);
+	qmFile->addAction(actionOut_);
+	qmFile->addAction(actionImport_);
 	qmFile->addSeparator();
-	qmFile->addAction(qaPreferences_cmd);
+	qmFile->addAction(actionPreferences_);
 	qmFile->addSeparator();
-	qmFile->addAction(qaExit_cmd);
+	qmFile->addAction(actionExit_);
 
-	QMenu* qmReestr=qmbMainMenu->addMenu(tr("Reestr"));
-	qmReestr->addAction(qaAdd_cmd);
-	qmReestr->addAction(qaEdit_cmd);
-	qmReestr->addAction(qaDelete_cmd);
-	qmReestr->addAction(qaChangeMoney_cmd);
-	qmReestr->addAction(qaNullMoney_cmd);
-	qmReestr->addAction(qaSaveHeader_cmd);
+	QMenu* qmReestr=mainMenu_->addMenu(tr("Reestr"));
+	qmReestr->addAction(actionAdd_);
+	qmReestr->addAction(actionEdit_);
+	qmReestr->addAction(actionDelete_);
+	qmReestr->addAction(actionChangeMoney_);
+	qmReestr->addAction(actionNullMoney_);
+	qmReestr->addAction(actionSaveHeader_);
 
-	QMenu* qmHelp=qmbMainMenu->addMenu(tr("Help"));
-	qmHelp->addAction(qaAbout_cmd);
-	qmHelp->addAction(qaAboutQt_cmd);
+	QMenu* qmHelp=mainMenu_->addMenu(tr("Help"));
+	qmHelp->addAction(actionAbout_);
+	qmHelp->addAction(actionAboutQt_);
 }
-//
+
 void MainWindowImpl::setLayouts()
 {
 	QGridLayout* qglHeaderLayout=new QGridLayout();
-	qglHeaderLayout->addWidget(qlOrganizationName,0,0);
-	qglHeaderLayout->addWidget(qleOrganizationName,1,0);
-	qglHeaderLayout->addWidget(qlReestrNumber,0,1);
-	qglHeaderLayout->addWidget(qsbReestrNumber,1,1);
-	qglHeaderLayout->addWidget(qlFilialName,0,2);
-	qglHeaderLayout->addWidget(qleFilialName,1,2);
-	qglHeaderLayout->addWidget(qlSchetOrganization,0,3);
-	qglHeaderLayout->addWidget(qleSchetOrganization,1,3);
-	qglHeaderLayout->addWidget(qlDogovorNumber,3,0);
-	qglHeaderLayout->addWidget(qleDogovorNumber,4,0);
-	qglHeaderLayout->addWidget(qlDogovorDate,3,1);
-	qglHeaderLayout->addWidget(qdeDogovorDate,4,1);
-	qglHeaderLayout->addWidget(qlPlatNumber,3,2);
-	qglHeaderLayout->addWidget(qlePlatNumber,4,2);
-	qglHeaderLayout->addWidget(qlPlatDate,3,3);
-	qglHeaderLayout->addWidget(qdePlatDate,4,3);
-	qglHeaderLayout->addWidget(qlVid,5,0);
-	qglHeaderLayout->addWidget(qcbVid,5,1,1,3);
+	qglHeaderLayout->addWidget(organizationNameLabel_,0,0);
+	qglHeaderLayout->addWidget(organizationNameEdit_,1,0);
+	qglHeaderLayout->addWidget(reestrNumberLabel_,0,1);
+	qglHeaderLayout->addWidget(reestrNumberEdit_,1,1);
+	qglHeaderLayout->addWidget(filialNameLabel_,0,2);
+	qglHeaderLayout->addWidget(filialNameEdit_,1,2);
+	qglHeaderLayout->addWidget(schetOrganizationLabel_,0,3);
+	qglHeaderLayout->addWidget(schetOrganizationEdit_,1,3);
+	qglHeaderLayout->addWidget(dogovorNumberLabel_,3,0);
+	qglHeaderLayout->addWidget(dogovorNumberEdit_,4,0);
+	qglHeaderLayout->addWidget(dogovorDateLabel_,3,1);
+	qglHeaderLayout->addWidget(dogovorDateEdit_,4,1);
+	qglHeaderLayout->addWidget(platNumberLabel_,3,2);
+	qglHeaderLayout->addWidget(platNumberEdit_,4,2);
+	qglHeaderLayout->addWidget(platDateLabel_,3,3);
+	qglHeaderLayout->addWidget(platDateEdit_,4,3);
+	qglHeaderLayout->addWidget(vidLabel_,5,0);
+	qglHeaderLayout->addWidget(vidEdit_,5,1,1,3);
 
-	qgbHeaderGroup->setLayout(qglHeaderLayout);
+	headerGroup_->setLayout(qglHeaderLayout);
 
 	QVBoxLayout* qvbMainLayout=new QVBoxLayout();
-	qvbMainLayout->addWidget(qgbHeaderGroup);
-	qvbMainLayout->addWidget(qtwTable);
-	qwCentralWidget->setLayout(qvbMainLayout);
+	qvbMainLayout->addWidget(headerGroup_);
+	qvbMainLayout->addWidget(table_);
+	centralWidget ()->setLayout(qvbMainLayout);
 }
-//
+
 void MainWindowImpl::setConnects()
 {
-	connect(qaNew_cmd,SIGNAL(triggered()),this,SLOT(slotNewReestr()));
-	connect(qaImport_cmd,SIGNAL(triggered()),this,SLOT(slotImport()));
-	connect(qaOpen_cmd,SIGNAL(triggered()),this,SLOT(slotOpenReestr()));
-	connect(qaSave_cmd,SIGNAL(triggered()),this,SLOT(slotSaveReestr()));
-	connect(qaSaveAs_cmd,SIGNAL(triggered()),this,SLOT(slotSaveAsReestr()));
-	connect(qaAdd_cmd,SIGNAL(triggered()),this,SLOT(slotAdd()));
-	connect(qaEdit_cmd,SIGNAL(triggered()),this,SLOT(slotEdit()));
-	connect(qaDelete_cmd,SIGNAL(triggered()),this,SLOT(slotDelete()));
-	connect(qaChangeMoney_cmd,SIGNAL(triggered()),this,SLOT(slotChangeMoney()));
-	connect(qaNullMoney_cmd,SIGNAL(triggered()),this,SLOT(slotNullMoney()));
-	connect(qaSaveHeader_cmd,SIGNAL(triggered()),this,SLOT(slotSaveHeader()));
-	connect(qaAbout_cmd,SIGNAL(triggered()),this,SLOT(slotAbout()));
-	connect(qaAboutQt_cmd,SIGNAL(triggered()),qApp,SLOT(aboutQt()));
-	connect(qaExit_cmd,SIGNAL(triggered()),this,SLOT(close()));
-	connect(qaOut_cmd,SIGNAL(triggered()),this,SLOT(slotOut()));
-	connect(qaPreferences_cmd,SIGNAL(triggered()),this,SLOT(slotPreferences()));
+	connect(actionNew_,SIGNAL(triggered()),SLOT(newReestr()));
+	connect(actionImport_,SIGNAL(triggered()),SLOT(import()));
+	connect(actionOpen_,SIGNAL(triggered()),SLOT(openReestr()));
+	connect(actionSave_,SIGNAL(triggered()),SLOT(saveReestr()));
+	connect(actionSaveAs_,SIGNAL(triggered()),SLOT(saveAsReestr()));
+	connect(actionAdd_,SIGNAL(triggered()),SLOT(addRecord()));
+	connect(actionEdit_,SIGNAL(triggered()),SLOT(editRecord()));
+	connect(actionDelete_,SIGNAL(triggered()),SLOT(deleteRecord()));
+	connect(actionChangeMoney_,SIGNAL(triggered()),SLOT(changeMoney()));
+	connect(actionNullMoney_,SIGNAL(triggered()),SLOT(nullMoney()));
+	connect(actionSaveHeader_,SIGNAL(triggered()),SLOT(saveHeader()));
+	connect(actionAbout_,SIGNAL(triggered()),SLOT(about()));
+	connect(actionAboutQt_,SIGNAL(triggered()),qApp,SLOT(aboutQt()));
+	connect(actionExit_,SIGNAL(triggered()),SLOT(close()));
+	connect(actionOut_,SIGNAL(triggered()),SLOT(out()));
+	connect(actionPreferences_,SIGNAL(triggered()),SLOT(preferences()));
 
-	connect(qleOrganizationName,SIGNAL(editingFinished ()),this,SLOT(slotCheckReestr()));
-	connect(qleFilialName,SIGNAL(editingFinished ()),this,SLOT(slotCheckReestr()));
-	connect(qleSchetOrganization,SIGNAL(editingFinished ()),this,SLOT(slotCheckReestr()));
-	connect(qleDogovorNumber,SIGNAL(editingFinished ()),this,SLOT(slotCheckReestr()));
-	connect(qlePlatNumber,SIGNAL(editingFinished()),this,SLOT(slotCheckReestr()));
-	connect(qtwTable,SIGNAL(itemActivated(QTableWidgetItem*)),this,SLOT(slotItemActivated(QTableWidgetItem*)));
+	connect(organizationNameEdit_,SIGNAL(editingFinished ()),SLOT(onCheckReestr()));
+	connect(filialNameEdit_,SIGNAL(editingFinished ()),SLOT(onCheckReestr()));
+	connect(schetOrganizationEdit_,SIGNAL(editingFinished ()),SLOT(onCheckReestr()));
+	connect(dogovorNumberEdit_,SIGNAL(editingFinished ()),SLOT(onCheckReestr()));
+	connect(platNumberEdit_,SIGNAL(editingFinished()),SLOT(onCheckReestr()));
+	connect(table_,SIGNAL(itemActivated(QTableWidgetItem*)),SLOT(itemActivated(QTableWidgetItem*)));
 }
-//
+
 void MainWindowImpl::loadSettings()
 {
-	move(qsetAppSettings->value("MainWindow/pos",QPoint(0,0)).toPoint());
-	resize(qsetAppSettings->value("MainWindow/size",QSize(640,480)).toSize());
-	bool bIsMaximized=qsetAppSettings->value("MainWindow/IsMaximized",false).toBool();
+	move(applicationSettings_->value("MainWindow/pos",QPoint(0,0)).toPoint());
+	resize(applicationSettings_->value("MainWindow/size",QSize(640,480)).toSize());
+	bool bIsMaximized=applicationSettings_->value("MainWindow/IsMaximized",false).toBool();
 	if (bIsMaximized) setWindowState(Qt::WindowMaximized);
-	for (int i=0; i<qtwTable->columnCount(); i++)
+	for (int i=0; i<table_->columnCount(); i++)
 	{
-		qtwTable->setColumnWidth(i,qsetAppSettings->value(QString("MainTableColumns/Column_%1").arg(i),50).toInt());
+		table_->setColumnWidth(i,applicationSettings_->value(QString("MainTableColumns/Column_%1").arg(i),50).toInt());
 	}
-	qsbReestrNumber->setValue(qsetAppSettings->value("Global/ReestrNumber",1).toInt());
+	reestrNumberEdit_->setValue(applicationSettings_->value("Global/ReestrNumber",1).toInt());
 }
-//
+
 void MainWindowImpl::saveSettings()
 {
 	if (windowState()!=Qt::WindowMaximized)
 	{
-		qsetAppSettings->setValue("MainWindow/pos",pos());
-		qsetAppSettings->setValue("MainWindow/size",size());
-		qsetAppSettings->setValue("MainWindow/IsMaximized",false);
+		applicationSettings_->setValue("MainWindow/pos",pos());
+		applicationSettings_->setValue("MainWindow/size",size());
+		applicationSettings_->setValue("MainWindow/IsMaximized",false);
 	}
 	else
-		qsetAppSettings->setValue("MainWindow/IsMaximized",true);
+		applicationSettings_->setValue("MainWindow/IsMaximized",true);
 
-	for (int i=0; i<qtwTable->columnCount(); i++)
+	for (int i=0; i<table_->columnCount(); i++)
 	{
-		qsetAppSettings->setValue(QString("MainTableColumns/Column_%1").arg(i),qtwTable->columnWidth(i));
+		applicationSettings_->setValue(QString("MainTableColumns/Column_%1").arg(i),table_->columnWidth(i));
 	}
-	qsetAppSettings->setValue("Global/ReestrNumber",qsbReestrNumber->value());
-	qsetAppSettings->sync();
+	applicationSettings_->setValue("Global/ReestrNumber",reestrNumberEdit_->value());
+	applicationSettings_->sync();
 }
-//
+
 void MainWindowImpl::import(const QString& qsFileName)
 {
 	QFile file;
@@ -274,7 +299,7 @@ void MainWindowImpl::import(const QString& qsFileName)
 		QMessageBox::critical(this, tr("Error"),tr("Error open file"));
 		return;
 	}
-	qtwTable->clearContents();
+	table_->clearContents();
 	QStringList ImportList;
 	QTextStream FileStream(&file);
 	FileStream.setCodec("IBM 866");
@@ -289,7 +314,7 @@ void MainWindowImpl::import(const QString& qsFileName)
 	file.close();
 
 	progress.setMaximum(ImportList.count());
-	qtwTable->setRowCount(ImportList.count());
+	table_->setRowCount(ImportList.count());
 	for (int i=0; i<ImportList.count(); i++)
 	{
 		if ((i/10)*10==i)
@@ -306,11 +331,11 @@ void MainWindowImpl::import(const QString& qsFileName)
 									QString(tr("String %1 is not valid\nBreak?")).arg(i+1),
 									QMessageBox::Yes | QMessageBox::No);
 			if (rez==QMessageBox::No)
-				qtwTable->setRowCount(qtwTable->rowCount()-1);
+				table_->setRowCount(table_->rowCount()-1);
 			else
 			{
-				qtwTable->clearContents();
-				qtwTable->setRowCount(0);
+				table_->clearContents();
+				table_->setRowCount(0);
 				return;
 			}
 		}
@@ -318,68 +343,68 @@ void MainWindowImpl::import(const QString& qsFileName)
 		{
 			QTableWidgetItem *item;
 			item=new QTableWidgetItem(tmpList.at(2));
-			qtwTable->setItem(i,0,item);
+			table_->setItem(i,0,item);
 			item=new QTableWidgetItem(tmpList.at(3));
-			qtwTable->setItem(i,1,item);
+			table_->setItem(i,1,item);
 			item=new QTableWidgetItem(tmpList.at(4));
-			qtwTable->setItem(i,2,item);
+			table_->setItem(i,2,item);
 			item=new QTableWidgetItem(tmpList.at(5));
-			qtwTable->setItem(i,3,item);
+			table_->setItem(i,3,item);
 			item=new QTableWidgetItem(tmpList.at(8));
 			item->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-			qtwTable->setItem(i,4,item);
+			table_->setItem(i,4,item);
 		}
 		tmpList.clear();
 	}
-	qtwTable->selectRow(0);
+	table_->selectRow(0);
 	setCurrentFile("");
 	loadHeader();
-	slotUpdateActions();
+	updateActions();
 	checkReestr();
 }
-//
-void MainWindowImpl::slotOpenReestr()
+
+void MainWindowImpl::openReestr()
 {
 	if (okToContinue())
 	{
 		QString qsFileName;
 		qsFileName = QFileDialog::getOpenFileName(this,
 										tr("Open file"),
-										qsetAppSettings->value("PATH/OpenPath",QString()).toString(),
+										applicationSettings_->value("PATH/OpenPath",QString()).toString(),
 										tr("DBase files (*.dbf)"));
 		if (!qsFileName.isEmpty())
 		{
-			qsetAppSettings->setValue("PATH/OpenPath",QFileInfo(qsFileName).absolutePath());
+			applicationSettings_->setValue("PATH/OpenPath",QFileInfo(qsFileName).absolutePath());
 			loadFile(qsFileName);
 		}
 	}
 }
-//
-void MainWindowImpl::slotImport()
+
+void MainWindowImpl::import()
 {
 	if (okToContinue())
 	{
 		QString qsFileName;
 		qsFileName=QFileDialog::getOpenFileName(this,
 											tr("Open file"),
-											qsetAppSettings->value("PATH/ImportPath",QString()).toString(),
+											applicationSettings_->value("PATH/ImportPath",QString()).toString(),
 											tr("Old format files (*.s??)\nAll files (*.*)"));
 		if (!qsFileName.isEmpty())
 		{
-			qsetAppSettings->setValue("PATH/ImportPath",QFileInfo(qsFileName).absolutePath());
+			applicationSettings_->setValue("PATH/ImportPath",QFileInfo(qsFileName).absolutePath());
 			import(qsFileName);
 		}
 	}
 }
-//
+
 bool MainWindowImpl::loadFile(const QString& qsFileName)
 {
-	qsdBase.close();
+	QSqlDatabase::database ().close();
 	QString qsConnectionString="DRIVER={Microsoft dBase Driver (*.dbf)};FIL={dBase III;};DefaultDir="+QFileInfo(qsFileName).absolutePath();
-	qsdBase.setDatabaseName(qsConnectionString);
-	if (!qsdBase.open())
+	QSqlDatabase::database ().setDatabaseName(qsConnectionString);
+	if (!QSqlDatabase::database ().open())
 	{
-		QMessageBox::critical(0, tr("Error connect"), qsdBase.lastError().text());
+		QMessageBox::critical(0, tr("Error connect"), QSqlDatabase::database ().lastError().text());
 		return false;
 	}
 	QSqlQuery* qsqQuery=new QSqlQuery();
@@ -401,45 +426,45 @@ bool MainWindowImpl::loadFile(const QString& qsFileName)
 		return false;
 	}
 	qsqQuery->first();
-	qtwTable->clearContents();
-	qtwTable->setRowCount(0);
+	table_->clearContents();
+	table_->setRowCount(0);
 	QTableWidgetItem *item;
 	int iRow=0;
 //Read header
-	qleFilialName->setText(qsqQuery->value(0).toString().replace(tr("#"),tr("№")));
+	filialNameEdit_->setText(qsqQuery->value(0).toString().replace(tr("#"),tr("№")));
 	qsqQuery->next();
 	qpdProgress->setValue(qpdProgress->value()+1);
-	qlePlatNumber->setText(qsqQuery->value(1).toString());
-	qdePlatDate->setDate(QDate().fromString(qsqQuery->value(3).toString(),"dd.MM.yyyy"));
+	platNumberEdit_->setText(qsqQuery->value(1).toString());
+	platDateEdit_->setDate(QDate().fromString(qsqQuery->value(3).toString(),"dd.MM.yyyy"));
 	qsqQuery->next();
 	qpdProgress->setValue(qpdProgress->value()+1);
-	qcbVid->setCurrentIndex(qsqQuery->value(1).toInt()-1);
+	vidEdit_->setCurrentIndex(qsqQuery->value(1).toInt()-1);
 	qsqQuery->next();
 	qpdProgress->setValue(qpdProgress->value()+1);
-	qleOrganizationName->setText(qsqQuery->value(1).toString().replace(tr("#"),tr("№")));
-	qleSchetOrganization->setText(qsqQuery->value(2).toString());
+	organizationNameEdit_->setText(qsqQuery->value(1).toString().replace(tr("#"),tr("№")));
+	schetOrganizationEdit_->setText(qsqQuery->value(2).toString());
 	qsqQuery->next();
 	qpdProgress->setValue(qpdProgress->value()+1);
-	qleDogovorNumber->setText(qsqQuery->value(1).toString());
-	qdeDogovorDate->setDate(QDate().fromString(qsqQuery->value(3).toString(),"dd.MM.yyyy"));
+	dogovorNumberEdit_->setText(qsqQuery->value(1).toString());
+	dogovorDateEdit_->setDate(QDate().fromString(qsqQuery->value(3).toString(),"dd.MM.yyyy"));
 	qsqQuery->next();
 	qpdProgress->setValue(qpdProgress->value()+1);
 //End read header
-	qtwTable->setUpdatesEnabled(false);
-	qtwTable->setRowCount(qpdProgress->maximum()-5);
+	table_->setUpdatesEnabled(false);
+	table_->setRowCount(qpdProgress->maximum()-5);
 	while (qsqQuery->next())
 	{
 		item=new QTableWidgetItem(qsqQuery->value(2).toString());
-		qtwTable->setItem(iRow,0,item);
+		table_->setItem(iRow,0,item);
 		item=new QTableWidgetItem(qsqQuery->value(3).toString());
-		qtwTable->setItem(iRow,1,item);
+		table_->setItem(iRow,1,item);
 		item=new QTableWidgetItem(qsqQuery->value(4).toString());
-		qtwTable->setItem(iRow,2,item);
+		table_->setItem(iRow,2,item);
 		item=new QTableWidgetItem(qsqQuery->value(1).toString());
-		qtwTable->setItem(iRow,3,item);
+		table_->setItem(iRow,3,item);
 		item=new QTableWidgetItem(qsqQuery->value(5).toString());
 		item->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-		qtwTable->setItem(iRow,4,item);
+		table_->setItem(iRow,4,item);
 		iRow++;
 		qpdProgress->setValue(qpdProgress->value()+1);
 		QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
@@ -448,22 +473,22 @@ bool MainWindowImpl::loadFile(const QString& qsFileName)
 	QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 	delete qpdProgress;
 	qsqQuery->clear();
-	qsdBase.close();
+	QSqlDatabase::database ().close();
 
-	qtwTable->removeRow(qtwTable->rowCount()-1);
-	qtwTable->selectRow(0);
+	table_->removeRow(table_->rowCount()-1);
+	table_->selectRow(0);
 	setCurrentFile(qsFileName);
-	slotUpdateActions();
+	updateActions();
 	checkReestr();
-	qtwTable->setUpdatesEnabled(true);
+	table_->setUpdatesEnabled(true);
 	return true;
 }
-//
-bool MainWindowImpl::slotSaveReestr()
+
+bool MainWindowImpl::saveReestr()
 {
-	if (qsCurrentFile.isEmpty())
+	if (currentFile_.isEmpty())
 	{
-		return slotSaveAsReestr();
+		return saveAsReestr();
 	}
 	if (checkReestr()==1)
 	{
@@ -480,11 +505,11 @@ bool MainWindowImpl::slotSaveReestr()
 		if (res==QMessageBox::Cancel)
 			return false;
 	}
-	return saveFile(qsCurrentFile);
+	return saveFile(currentFile_);
 
 }
-//
-bool MainWindowImpl::slotSaveAsReestr()
+
+bool MainWindowImpl::saveAsReestr()
 {
 	if (checkReestr()==1)
 	{
@@ -504,24 +529,24 @@ bool MainWindowImpl::slotSaveAsReestr()
 	QString qsFileName;
 	qsFileName = QFileDialog::getSaveFileName(this,
 							tr("Open file"),
-							qsetAppSettings->value("PATH/OpenPath",QString()).toString(),
+							applicationSettings_->value("PATH/OpenPath",QString()).toString(),
 							tr("DBase files (*.dbf)"));
 	if (qsFileName.isEmpty())
 		return false;
-	qsetAppSettings->setValue("PATH/OpenPath",QFileInfo(qsFileName).absolutePath());
+	applicationSettings_->setValue("PATH/OpenPath",QFileInfo(qsFileName).absolutePath());
 	return saveFile(qsFileName);
 }
-//
+
 bool MainWindowImpl::saveFile(const QString& qsFileName)
 {
 	if (QFileInfo(qsFileName).exists())
 		QFile::remove(qsFileName);
-	qsdBase.close();
+	QSqlDatabase::database ().close();
 	QString qsConnectionString="DRIVER={Microsoft dBase Driver (*.dbf)};FIL={dBase III;};DefaultDir="+QFileInfo(qsFileName).absolutePath();
-	qsdBase.setDatabaseName(qsConnectionString);
-	if (!qsdBase.open())
+	QSqlDatabase::database ().setDatabaseName(qsConnectionString);
+	if (!QSqlDatabase::database ().open())
 	{
-		QMessageBox::critical(this, tr("Error connect"), qsdBase.lastError().text());
+		QMessageBox::critical(this, tr("Error connect"), QSqlDatabase::database ().lastError().text());
 		return false;
 	}
 	QString qsTableName=QFileInfo(qsFileName).baseName();
@@ -534,9 +559,9 @@ bool MainWindowImpl::saveFile(const QString& qsFileName)
 		return false;
 	}
 	qsqQuery->clear();
-//
+
 	qsqQuery->prepare("INSERT INTO "+qsTableName+"(A) VALUES (:a);");
-	qsqQuery->bindValue(":a",qleFilialName->text().replace(tr("№"),tr("#")));
+	qsqQuery->bindValue(":a",filialNameEdit_->text().replace(tr("№"),tr("#")));
 	if (!qsqQuery->exec())
 	{
 		QMessageBox::critical(this, tr("Error save file"), qsqQuery->lastError().text());
@@ -544,13 +569,13 @@ bool MainWindowImpl::saveFile(const QString& qsFileName)
 		return false;
 	}
 	qsqQuery->clear();
-//
+
 	qsqQuery->prepare("INSERT INTO "+qsTableName+"(A,B,C,D) VALUES (:a,:b,:c,:d);");
 	qsqQuery->bindValue(":a",tr("К платежному поручению #"));
-	qsqQuery->bindValue(":b",qlePlatNumber->text());
+	qsqQuery->bindValue(":b",platNumberEdit_->text());
 	qsqQuery->bindValue(":c",tr("от"));
-	if (!qlePlatNumber->text().isEmpty())
-		qsqQuery->bindValue(":d",qdePlatDate->date().toString("dd.MM.yyyy"));
+	if (!platNumberEdit_->text().isEmpty())
+		qsqQuery->bindValue(":d",platDateEdit_->date().toString("dd.MM.yyyy"));
 	else
 		qsqQuery->bindValue(":d","");
 	if (!qsqQuery->exec())
@@ -560,10 +585,10 @@ bool MainWindowImpl::saveFile(const QString& qsFileName)
 		return false;
 	}
 	qsqQuery->clear();
-//
+
 	qsqQuery->prepare("INSERT INTO "+qsTableName+"(A,B) VALUES (:a,:b);");
 	qsqQuery->bindValue(":a",tr("Зачисление"));
-	qsqQuery->bindValue(":b",tr("0")+QString().setNum(qcbVid->currentIndex()+1));
+	qsqQuery->bindValue(":b",tr("0")+QString().setNum(vidEdit_->currentIndex()+1));
 	if (!qsqQuery->exec())
 	{
 		QMessageBox::critical(this, tr("Error save base"), qsqQuery->lastError().text());
@@ -571,11 +596,11 @@ bool MainWindowImpl::saveFile(const QString& qsFileName)
 		return false;
 	}
 	qsqQuery->clear();
-//
+
 	qsqQuery->prepare("INSERT INTO "+qsTableName+"(A,B,C) VALUES (:a,:b,:c);");
 	qsqQuery->bindValue(":a",tr("Наименование,ОГРН,# банк.счета"));
-	qsqQuery->bindValue(":b",qleOrganizationName->text().replace(tr("№"),tr("#")));
-	qsqQuery->bindValue(":c",qleSchetOrganization->text());
+	qsqQuery->bindValue(":b",organizationNameEdit_->text().replace(tr("№"),tr("#")));
+	qsqQuery->bindValue(":c",schetOrganizationEdit_->text());
 	if (!qsqQuery->exec())
 	{
 		QMessageBox::critical(this, tr("Error save base"), qsqQuery->lastError().text());
@@ -583,12 +608,12 @@ bool MainWindowImpl::saveFile(const QString& qsFileName)
 		return false;
 	}
 	qsqQuery->clear();
-//
+
 	qsqQuery->prepare("INSERT INTO "+qsTableName+"(A,B,C,D) VALUES (:a,:b,:c,:d);");
 	qsqQuery->bindValue(":a",tr("По договору:"));
-	qsqQuery->bindValue(":b",qleDogovorNumber->text());
+	qsqQuery->bindValue(":b",dogovorNumberEdit_->text());
 	qsqQuery->bindValue(":c",tr("от"));
-	qsqQuery->bindValue(":d",qdeDogovorDate->date().toString("dd.MM.yyyy"));
+	qsqQuery->bindValue(":d",dogovorDateEdit_->date().toString("dd.MM.yyyy"));
 	if (!qsqQuery->exec())
 	{
 		QMessageBox::critical(this, tr("Error save base"), qsqQuery->lastError().text());
@@ -596,7 +621,7 @@ bool MainWindowImpl::saveFile(const QString& qsFileName)
 		return false;
 	}
 	qsqQuery->clear();
-//
+
 	qsqQuery->prepare("INSERT INTO "+qsTableName+"(A,B,C,D,E,F,G) VALUES (:a,:b,:c,:d,:e,:f,:g);");
 	qsqQuery->bindValue(":a",tr("# п/п"));
 	qsqQuery->bindValue(":b",tr("Номер счета"));
@@ -612,22 +637,22 @@ bool MainWindowImpl::saveFile(const QString& qsFileName)
 		return false;
 	}
 	qsqQuery->clear();
-//
+
 	int iNullCount=0;
-	for (int i=0; i<qtwTable->rowCount(); i++)
+	for (int i=0; i<table_->rowCount(); i++)
 	{
-		if (qtwTable->item(i,4)->text().toDouble()==0.00)
+		if (table_->item(i,4)->text().toDouble()==0.00)
 		{
 			iNullCount++;
 			continue;
 		}
 		qsqQuery->prepare("INSERT INTO "+qsTableName+"(A,B,C,D,E,F) VALUES (:a,:b,:c,:d,:e,:f);");
 		qsqQuery->bindValue(":a",QString().setNum(i+1-iNullCount));
-		qsqQuery->bindValue(":b",qtwTable->item(i,3)->text());
-		qsqQuery->bindValue(":c",qtwTable->item(i,0)->text());
-		qsqQuery->bindValue(":d",qtwTable->item(i,1)->text());
-		qsqQuery->bindValue(":e",qtwTable->item(i,2)->text());
-		qsqQuery->bindValue(":f",qtwTable->item(i,4)->text());
+		qsqQuery->bindValue(":b",table_->item(i,3)->text());
+		qsqQuery->bindValue(":c",table_->item(i,0)->text());
+		qsqQuery->bindValue(":d",table_->item(i,1)->text());
+		qsqQuery->bindValue(":e",table_->item(i,2)->text());
+		qsqQuery->bindValue(":f",table_->item(i,4)->text());
 		if (!qsqQuery->exec())
 		{
 			QMessageBox::critical(this, tr("Error save base"), qsqQuery->lastError().text());
@@ -636,10 +661,10 @@ bool MainWindowImpl::saveFile(const QString& qsFileName)
 		}
 		qsqQuery->clear();
 	}
-//
+
 	qsqQuery->prepare("INSERT INTO "+qsTableName+"(B,F) VALUES (:b,:f);");
 	qsqQuery->bindValue(":b",tr("ИТОГО:"));
-	qsqQuery->bindValue(":f",QString().setNum(getSumm(),'f',2));
+	qsqQuery->bindValue(":f",QString().setNum(getSum(),'f',2));
 	if (!qsqQuery->exec())
 	{
 		QMessageBox::critical(this, tr("Error save base"), qsqQuery->lastError().text());
@@ -648,32 +673,32 @@ bool MainWindowImpl::saveFile(const QString& qsFileName)
 	}
 	qsqQuery->clear();
 	delete qsqQuery;
-	qsdBase.close();
+	QSqlDatabase::database ().close();
 	setCurrentFile(qsFileName);
 	return true;
 }
-//
-double MainWindowImpl::getSumm()
+
+double MainWindowImpl::getSum()
 {
 	double summ=0;
-	for (int i=0; i<qtwTable->rowCount(); i++)
+	for (int i=0; i<table_->rowCount(); i++)
 	{
-		summ+=qtwTable->item(i,4)->text().toDouble();
+		summ+=table_->item(i,4)->text().toDouble();
 	}
 	return summ;
 }
-//
-void MainWindowImpl::slotUpdateActions()
+
+void MainWindowImpl::updateActions()
 {
-	qlSumm->setText(tr("Count = %1 Summa = %2").arg(qtwTable->rowCount()).arg(getSumm(),0,'f',2));
-	bool bIsEmptyTable=((qtwTable->rowCount()>0) && (qtwTable->currentRow()>-1));
-	qaEdit_cmd->setEnabled(bIsEmptyTable);
-	qaChangeMoney_cmd->setEnabled(bIsEmptyTable);
-	qaDelete_cmd->setEnabled(bIsEmptyTable);
-	qaNullMoney_cmd->setEnabled(qtwTable->rowCount()>0);
+	sumLabel_->setText(tr("Count = %1 Summa = %2").arg(table_->rowCount()).arg(getSum(),0,'f',2));
+	bool bIsEmptyTable=((table_->rowCount()>0) && (table_->currentRow()>-1));
+	actionEdit_->setEnabled(bIsEmptyTable);
+	actionChangeMoney_->setEnabled(bIsEmptyTable);
+	actionDelete_->setEnabled(bIsEmptyTable);
+	actionNullMoney_->setEnabled(table_->rowCount()>0);
 }
-//
-void MainWindowImpl::slotAdd()
+
+void MainWindowImpl::addRecord()
 {
 	QMyAddDialog* qmadDialog=new QMyAddDialog(this);
 	qmadDialog->setWindowTitle(tr("Adding"));
@@ -681,216 +706,216 @@ void MainWindowImpl::slotAdd()
 	qmadDialog->startCheck();
 	if (qmadDialog->exec())
 	{
-		qtwTable->insertRow(qtwTable->rowCount());
-		int iRow=qtwTable->rowCount()-1;
+		table_->insertRow(table_->rowCount());
+		int iRow=table_->rowCount()-1;
 		QTableWidgetItem* item;
-		item=new QTableWidgetItem(qmadDialog->qleFamil->text());
-		qtwTable->setItem(iRow,0,item);
-		item=new QTableWidgetItem(qmadDialog->qleName->text());
-		qtwTable->setItem(iRow,1,item);
-		item=new QTableWidgetItem(qmadDialog->qleOtch->text());
-		qtwTable->setItem(iRow,2,item);
-		item=new QTableWidgetItem(qmadDialog->qleSchet->text());
-		qtwTable->setItem(iRow,3,item);
-		item=new QTableWidgetItem(QString().setNum(qmadDialog->qleMoney->text().toDouble(),'f',2).replace(',','.'));
+		item=new QTableWidgetItem(qmadDialog->familEdit_->text());
+		table_->setItem(iRow,0,item);
+		item=new QTableWidgetItem(qmadDialog->nameEdit_->text());
+		table_->setItem(iRow,1,item);
+		item=new QTableWidgetItem(qmadDialog->otchEdit_->text());
+		table_->setItem(iRow,2,item);
+		item=new QTableWidgetItem(qmadDialog->schetEdit_->text());
+		table_->setItem(iRow,3,item);
+		item=new QTableWidgetItem(QString().setNum(qmadDialog->moneyEdit_->text().toDouble(),'f',2).replace(',','.'));
 		item->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-		qtwTable->setItem(iRow,4,item);
-		qtwTable->selectRow(iRow);
+		table_->setItem(iRow,4,item);
+		table_->selectRow(iRow);
 		setWindowModified(true);
 	}
 	delete qmadDialog;
-	slotUpdateActions();
+	updateActions();
 	checkReestr();
 }
-//
-void MainWindowImpl::slotEdit()
+
+void MainWindowImpl::editRecord()
 {
-	int iRow=qtwTable->currentRow();
+	int iRow=table_->currentRow();
 	if (iRow<0) return;
 	QMyAddDialog* qmadDialog=new QMyAddDialog(this);
 	qmadDialog->setWindowTitle(tr("Editing"));
-	qmadDialog->qleFamil->setText(qtwTable->item(iRow,0)->text());
-	qmadDialog->qleName->setText(qtwTable->item(iRow,1)->text());
-	qmadDialog->qleOtch->setText(qtwTable->item(iRow,2)->text());
-	qmadDialog->qleSchet->setText(qtwTable->item(iRow,3)->text());
-	qmadDialog->qleMoney->setText(qtwTable->item(iRow,4)->text());
+	qmadDialog->familEdit_->setText(table_->item(iRow,0)->text());
+	qmadDialog->nameEdit_->setText(table_->item(iRow,1)->text());
+	qmadDialog->otchEdit_->setText(table_->item(iRow,2)->text());
+	qmadDialog->schetEdit_->setText(table_->item(iRow,3)->text());
+	qmadDialog->moneyEdit_->setText(table_->item(iRow,4)->text());
 	qmadDialog->startCheck();
 	if (qmadDialog->exec())
 	{
-		qtwTable->item(iRow,0)->setText(qmadDialog->qleFamil->text());
-		qtwTable->item(iRow,1)->setText(qmadDialog->qleName->text());
-		qtwTable->item(iRow,2)->setText(qmadDialog->qleOtch->text());
-		qtwTable->item(iRow,3)->setText(qmadDialog->qleSchet->text());
-		qtwTable->item(iRow,4)->setText(QString().setNum(qmadDialog->qleMoney->text().toDouble(),'f',2).replace(',','.'));
+		table_->item(iRow,0)->setText(qmadDialog->familEdit_->text());
+		table_->item(iRow,1)->setText(qmadDialog->nameEdit_->text());
+		table_->item(iRow,2)->setText(qmadDialog->otchEdit_->text());
+		table_->item(iRow,3)->setText(qmadDialog->schetEdit_->text());
+		table_->item(iRow,4)->setText(QString().setNum(qmadDialog->moneyEdit_->text().toDouble(),'f',2).replace(',','.'));
 		setWindowModified(true);
 	}
 	delete qmadDialog;
-	slotUpdateActions();
+	updateActions();
 	checkReestr();
 }
-//
-void MainWindowImpl::slotDelete()
+
+void MainWindowImpl::deleteRecord()
 {
-	int iRow=qtwTable->currentRow();
+	int iRow=table_->currentRow();
 	if (iRow<0) return;
-	qtwTable->removeRow(iRow);
-	if (qtwTable->currentIndex().isValid())
-		qtwTable->selectRow(qtwTable->currentIndex().row());
+	table_->removeRow(iRow);
+	if (table_->currentIndex().isValid())
+		table_->selectRow(table_->currentIndex().row());
 	setWindowModified(true);
-	slotUpdateActions();
+	updateActions();
 	checkReestr();
 }
-//
-void MainWindowImpl::slotChangeMoney()
+
+void MainWindowImpl::changeMoney()
 {
-	int iRow=qtwTable->currentRow();
+	int iRow=table_->currentRow();
 	if (iRow<0) return;
 	QMyAddDialog* qmadDialog=new QMyAddDialog(this);
 	qmadDialog->setWindowTitle(tr("Changing money"));
-	qmadDialog->qleFamil->setVisible(false);
-	qmadDialog->qleName->setVisible(false);
-	qmadDialog->qleOtch->setVisible(false);
-	qmadDialog->qleSchet->setVisible(false);
-	qmadDialog->qlFamil->setVisible(false);
-	qmadDialog->qlName->setVisible(false);
-	qmadDialog->qlOtch->setVisible(false);
-	qmadDialog->qlSchet->setVisible(false);
-	qmadDialog->qleMoney->setText(qtwTable->item(iRow,4)->text());
-	qmadDialog->qleMoney->selectAll();
+	qmadDialog->familEdit_->setVisible(false);
+	qmadDialog->nameEdit_->setVisible(false);
+	qmadDialog->otchEdit_->setVisible(false);
+	qmadDialog->schetEdit_->setVisible(false);
+	qmadDialog->familLabel_->setVisible(false);
+	qmadDialog->nameLabel_->setVisible(false);
+	qmadDialog->otchLabel_->setVisible(false);
+	qmadDialog->schetLabel_->setVisible(false);
+	qmadDialog->moneyEdit_->setText(table_->item(iRow,4)->text());
+	qmadDialog->moneyEdit_->selectAll();
 	if (qmadDialog->exec())
 	{
-		qtwTable->item(iRow,4)->setText(QString().setNum(qmadDialog->qleMoney->text().toDouble(),'f',2).replace(',','.'));
+		table_->item(iRow,4)->setText(QString().setNum(qmadDialog->moneyEdit_->text().toDouble(),'f',2).replace(',','.'));
 		setWindowModified(true);
 	}
 	delete qmadDialog;
-	slotUpdateActions();
+	updateActions();
 	checkReestr();
 }
-//
-void MainWindowImpl::slotNullMoney()
+
+void MainWindowImpl::nullMoney()
 {
-	for (int i=0; i<qtwTable->rowCount(); i++)
+	for (int i=0; i<table_->rowCount(); i++)
 	{
-		qtwTable->item(i,4)->setText("0.00");
+		table_->item(i,4)->setText("0.00");
 	}
 	setWindowModified(true);
-	slotUpdateActions();
+	updateActions();
 	checkReestr();
 }
-//
+
 int MainWindowImpl::checkReestr()
 {
 	int iValid=0;
-	if (qleOrganizationName->text().isEmpty())
+	if (organizationNameEdit_->text().isEmpty())
 	{
-		setErrorPalette(qleOrganizationName);
+		setErrorPalette(organizationNameEdit_);
 		iValid=1;
 	}
 	else
-		qleOrganizationName->setPalette(QApplication::palette());
-	if (qleFilialName->text().isEmpty())
+		organizationNameEdit_->setPalette(QApplication::palette());
+	if (filialNameEdit_->text().isEmpty())
 	{
-		setErrorPalette(qleFilialName);
+		setErrorPalette(filialNameEdit_);
 		iValid=1;
 	}
 	else
-		qleFilialName->setPalette(QApplication::palette());
-	if ((qleSchetOrganization->text().isEmpty()) || (qleSchetOrganization->text().count()!=20))
+		filialNameEdit_->setPalette(QApplication::palette());
+	if ((schetOrganizationEdit_->text().isEmpty()) || (schetOrganizationEdit_->text().count()!=20))
 	{
-		setErrorPalette(qleSchetOrganization);
+		setErrorPalette(schetOrganizationEdit_);
 		iValid=1;
 	}
 	else
-		qleSchetOrganization->setPalette(QApplication::palette());
-	if ((qleDogovorNumber->text().isEmpty()) || (qleDogovorNumber->text().count()!=8))
+		schetOrganizationEdit_->setPalette(QApplication::palette());
+	if ((dogovorNumberEdit_->text().isEmpty()) || (dogovorNumberEdit_->text().count()!=8))
 	{
-		setErrorPalette(qleDogovorNumber);
+		setErrorPalette(dogovorNumberEdit_);
 		iValid=1;
 	}
 	else
-		qleDogovorNumber->setPalette(QApplication::palette());
-	if ((qlePlatNumber->text().isEmpty()) || (qlePlatNumber->text().count()!=6))
+		dogovorNumberEdit_->setPalette(QApplication::palette());
+	if ((platNumberEdit_->text().isEmpty()) || (platNumberEdit_->text().count()!=6))
 	{
-		setWarningPalette(qlePlatNumber);
+		setWarningPalette(platNumberEdit_);
 		if (iValid==0) iValid=2;
 	}
 	else
-		qlePlatNumber->setPalette(QApplication::palette());
+		platNumberEdit_->setPalette(QApplication::palette());
 
-	if (qtwTable->rowCount()<=0)
+	if (table_->rowCount()<=0)
 		iValid=1;
-	for (int i=0; i<qtwTable->rowCount(); i++)
+	for (int i=0; i<table_->rowCount(); i++)
 	{
-		if (qtwTable->item(i,0)->text().isEmpty())//Famil
+		if (table_->item(i,0)->text().isEmpty())//Famil
 		{
-			qtwTable->item(i,0)->setBackgroundColor(Qt::red);
+			table_->item(i,0)->setBackgroundColor(Qt::red);
 			iValid=1;
 		}
 		else
 		{
-			qtwTable->item(i,0)->setBackgroundColor(Qt::white);
+			table_->item(i,0)->setBackgroundColor(Qt::white);
 		}
-		if (qtwTable->item(i,1)->text().isEmpty())//Name
+		if (table_->item(i,1)->text().isEmpty())//Name
 		{
-			qtwTable->item(i,1)->setBackgroundColor(Qt::red);
+			table_->item(i,1)->setBackgroundColor(Qt::red);
 			iValid=1;
 		}
 		else
-			qtwTable->item(i,1)->setBackgroundColor(Qt::white);
-		if (qtwTable->item(i,2)->text().isEmpty())//Otch
+			table_->item(i,1)->setBackgroundColor(Qt::white);
+		if (table_->item(i,2)->text().isEmpty())//Otch
 		{
-			qtwTable->item(i,2)->setBackgroundColor(Qt::yellow);
+			table_->item(i,2)->setBackgroundColor(Qt::yellow);
 			if (iValid==0) iValid=2;
 		}
 		else
-			qtwTable->item(i,2)->setBackgroundColor(Qt::white);
-		if (!checkSchet(qtwTable->item(i,3)->text()))//Schet
+			table_->item(i,2)->setBackgroundColor(Qt::white);
+		if (!checkSchet(table_->item(i,3)->text()))//Schet
 		{
-			qtwTable->item(i,3)->setBackgroundColor(Qt::red);
+			table_->item(i,3)->setBackgroundColor(Qt::red);
 			iValid=1;
 		}
 		else
-			qtwTable->item(i,3)->setBackgroundColor(Qt::white);
-		if ((qtwTable->item(i,4)->text().isEmpty()) || (qtwTable->item(i,4)->text().toDouble()<0))//Money
+			table_->item(i,3)->setBackgroundColor(Qt::white);
+		if ((table_->item(i,4)->text().isEmpty()) || (table_->item(i,4)->text().toDouble()<0))//Money
 		{
-			qtwTable->item(i,4)->setBackgroundColor(Qt::red);
+			table_->item(i,4)->setBackgroundColor(Qt::red);
 			iValid=1;
 		}
 		else
-			qtwTable->item(i,4)->setBackgroundColor(Qt::white);
+			table_->item(i,4)->setBackgroundColor(Qt::white);
 	}
 	return iValid;
 }
-//
+
 bool MainWindowImpl::checkSchet(const QString& qsSchet)
 {
 	if (qsSchet.length()!=20) return false;
 	if (qsSchet.mid(5,3)!="810") return false;
-	if (qsSchet.mid(9,4)!=qleDogovorNumber->text().mid(0,4)) return false;
+	if (qsSchet.mid(9,4)!=dogovorNumberEdit_->text().mid(0,4)) return false;
 	return true;
 }
-//
-void MainWindowImpl::slotSaveHeader()
+
+void MainWindowImpl::saveHeader()
 {
-	qsetAppSettings->setValue("Header/OrganizationName",qleOrganizationName->text());
-	qsetAppSettings->setValue("Header/FilialName",qleFilialName->text());
-	qsetAppSettings->setValue("Header/SchetOrganization",qleSchetOrganization->text());
-	qsetAppSettings->setValue("Header/DogovorNumber",qleDogovorNumber->text());
-	qsetAppSettings->setValue("Header/DogovorDate",qdeDogovorDate->date());
-	qsetAppSettings->setValue("Header/Vid",qcbVid->currentIndex());
-	qsetAppSettings->sync();
+	applicationSettings_->setValue("Header/OrganizationName",organizationNameEdit_->text());
+	applicationSettings_->setValue("Header/FilialName",filialNameEdit_->text());
+	applicationSettings_->setValue("Header/SchetOrganization",schetOrganizationEdit_->text());
+	applicationSettings_->setValue("Header/DogovorNumber",dogovorNumberEdit_->text());
+	applicationSettings_->setValue("Header/DogovorDate",dogovorDateEdit_->date());
+	applicationSettings_->setValue("Header/Vid",vidEdit_->currentIndex());
+	applicationSettings_->sync();
 }
-//
+
 void MainWindowImpl::loadHeader()
 {
-	qleOrganizationName->setText(qsetAppSettings->value("Header/OrganizationName",QString()).toString());
-	qleFilialName->setText(qsetAppSettings->value("Header/FilialName",QString()).toString());
-	qleSchetOrganization->setText(qsetAppSettings->value("Header/SchetOrganization",QString()).toString());
-	qleDogovorNumber->setText(qsetAppSettings->value("Header/DogovorNumber",QString()).toString());
-	qdeDogovorDate->setDate(qsetAppSettings->value("Header/DogovorDate",QString()).toDate());
-	qcbVid->setCurrentIndex(qsetAppSettings->value("Header/Vid",QString()).toInt());
+	organizationNameEdit_->setText(applicationSettings_->value("Header/OrganizationName",QString()).toString());
+	filialNameEdit_->setText(applicationSettings_->value("Header/FilialName",QString()).toString());
+	schetOrganizationEdit_->setText(applicationSettings_->value("Header/SchetOrganization",QString()).toString());
+	dogovorNumberEdit_->setText(applicationSettings_->value("Header/DogovorNumber",QString()).toString());
+	dogovorDateEdit_->setDate(applicationSettings_->value("Header/DogovorDate",QString()).toDate());
+	vidEdit_->setCurrentIndex(applicationSettings_->value("Header/Vid",QString()).toInt());
 }
-//
+
 void MainWindowImpl::closeEvent(QCloseEvent* event)
 {
 	if (okToContinue())
@@ -898,38 +923,38 @@ void MainWindowImpl::closeEvent(QCloseEvent* event)
 	else
 		event->ignore();
 }
-//
+
 void MainWindowImpl::createContextMenu()
 {
-	qtwTable->addAction(qaAdd_cmd);
-	qtwTable->addAction(qaEdit_cmd);
-	qtwTable->addAction(qaDelete_cmd);
-	qtwTable->addAction(qaChangeMoney_cmd);
-	qtwTable->addAction(qaNullMoney_cmd);
-	qtwTable->setContextMenuPolicy(Qt::ActionsContextMenu);
+	table_->addAction(actionAdd_);
+	table_->addAction(actionEdit_);
+	table_->addAction(actionDelete_);
+	table_->addAction(actionChangeMoney_);
+	table_->addAction(actionNullMoney_);
+	table_->setContextMenuPolicy(Qt::ActionsContextMenu);
 }
-//
+
 void MainWindowImpl::createToolBars()
 {
-	qtbFileToolbar=new QToolBar(tr("File"));
-	qtbFileToolbar->addAction(qaNew_cmd);
-	qtbFileToolbar->addAction(qaOpen_cmd);
-	qtbFileToolbar->addAction(qaSave_cmd);
-	qtbFileToolbar->addAction(qaSaveAs_cmd);
-	qtbFileToolbar->addAction(qaOut_cmd);
-	qtbFileToolbar->addAction(qaImport_cmd);
-	qtbFileToolbar->addAction(qaPreferences_cmd);
-	addToolBar(qtbFileToolbar);
+	fileToolbar_=new QToolBar(tr("File"));
+	fileToolbar_->addAction(actionNew_);
+	fileToolbar_->addAction(actionOpen_);
+	fileToolbar_->addAction(actionSave_);
+	fileToolbar_->addAction(actionSaveAs_);
+	fileToolbar_->addAction(actionOut_);
+	fileToolbar_->addAction(actionImport_);
+	fileToolbar_->addAction(actionPreferences_);
+	addToolBar(fileToolbar_);
 
-	qtbReestrToolbar=new QToolBar(tr("Reestr"));
-	qtbReestrToolbar->addAction(qaAdd_cmd);
-	qtbReestrToolbar->addAction(qaEdit_cmd);
-	qtbReestrToolbar->addAction(qaDelete_cmd);
-	qtbReestrToolbar->addAction(qaChangeMoney_cmd);
-	qtbReestrToolbar->addAction(qaNullMoney_cmd);
-	addToolBar(qtbReestrToolbar);
+	reestrToolbar_=new QToolBar(tr("Reestr"));
+	reestrToolbar_->addAction(actionAdd_);
+	reestrToolbar_->addAction(actionEdit_);
+	reestrToolbar_->addAction(actionDelete_);
+	reestrToolbar_->addAction(actionChangeMoney_);
+	reestrToolbar_->addAction(actionNullMoney_);
+	addToolBar(reestrToolbar_);
 }
-//
+
 bool MainWindowImpl::okToContinue()
 {
 	if (isWindowModified())
@@ -941,35 +966,35 @@ bool MainWindowImpl::okToContinue()
 								QMessageBox::No,
 								QMessageBox::Cancel);
 		if (res==QMessageBox::Yes)
-			return slotSaveReestr();
+			return saveReestr();
 		if (res==QMessageBox::Cancel)
 			return false;
 	}
 	return true;
 }
-//
-void MainWindowImpl::slotNewReestr()
+
+void MainWindowImpl::newReestr()
 {
 	if (okToContinue())
 	{
-		qtwTable->clearContents();
-		qtwTable->setRowCount(0);
+		table_->clearContents();
+		table_->setRowCount(0);
 		setCurrentFile("");
 	}
 }
-//
+
 void MainWindowImpl::setCurrentFile(const QString& qsFileName)
 {
-	qsCurrentFile=qsFileName;
+	currentFile_=qsFileName;
 	setWindowModified(false);
 	QString qsShowName=tr("Untitled");
-	if (!qsCurrentFile.isEmpty())
-		qsShowName=QFileInfo(qsCurrentFile).fileName();
+	if (!currentFile_.isEmpty())
+		qsShowName=QFileInfo(currentFile_).fileName();
 	setWindowTitle(tr("%1 %2[*]").arg(QApplication::applicationName()).arg(qsShowName));
-	slotUpdateActions();
+	updateActions();
 }
-//
-void MainWindowImpl::slotAbout()
+
+void MainWindowImpl::about()
 {
 	QMessageBox::about(this,tr("About Bank"),
 						tr("<h2>") + QApplication::applicationName() +tr ("</h2>")+
@@ -978,8 +1003,8 @@ void MainWindowImpl::slotAbout()
 							"<p>tel: 89094119675"
 							"<p>License: GNU GPL v2"));
 }
-//
-void MainWindowImpl::slotOut()
+
+void MainWindowImpl::out()
 {
 	if (checkReestr()==1)
 	{
@@ -996,7 +1021,7 @@ void MainWindowImpl::slotOut()
 		if (res==QMessageBox::Cancel)
 			return;
 	}
-	QDir dir(qsetAppSettings->value("PATH/ArchivesPath",QString()).toString());
+	QDir dir(applicationSettings_->value("PATH/ArchivesPath",QString()).toString());
 	if (!dir.exists())
 	{
 		dir.setCurrent(QCoreApplication::applicationDirPath());
@@ -1004,7 +1029,7 @@ void MainWindowImpl::slotOut()
 		dir.cd("archives");
 	}
 	bool bIsWindowModified=isWindowModified();
-	QString qsCurFile=qsCurrentFile;
+	QString qsCurFile=currentFile_;
 	QFileInfo qfiOutFile(dir.absolutePath()+
 						"/"+
 						QDate::currentDate().toString("yyMMdd")+
@@ -1014,10 +1039,10 @@ void MainWindowImpl::slotOut()
 	{
 		setCurrentFile(qsCurFile);
 		setWindowModified(bIsWindowModified);
-		QString qsOutName=qsetAppSettings->value("PATH/OutPath",QString()).toString()+
+		QString qsOutName=applicationSettings_->value("PATH/OutPath",QString()).toString()+
 							QDir::separator()+
 							"t1820"+
-							QString("%1").arg(qsbReestrNumber->value(),3,10,QChar('0'))+
+							QString("%1").arg(reestrNumberEdit_->value(),3,10,QChar('0'))+
 							".dbf";
 		if (!QFile::copy(qfiOutFile.filePath(),qsOutName))
 			QMessageBox::warning(this,
@@ -1028,17 +1053,16 @@ void MainWindowImpl::slotOut()
 			QMessageBox::information(this,
 								tr("Out"),
 								tr("Out is suxcessed"));
-			qsbReestrNumber->setValue(qsbReestrNumber->value()+1);
+			reestrNumberEdit_->setValue(reestrNumberEdit_->value()+1);
 		}
 	}
 }
-//
-void MainWindowImpl::slotPreferences()
+
+void MainWindowImpl::preferences()
 {
-	qmpPreferences=new QMyPreferences(this);
-	qmpPreferences->setWindowTitle(tr("Preferences"));
-	qmpPreferences->exec();
-	delete qmpPreferences;
+	QMyPreferences preferences;
+	preferences.setWindowTitle(tr("Preferences"));
+	preferences.exec();
 }
-//
+
 

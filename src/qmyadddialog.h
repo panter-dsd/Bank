@@ -1,52 +1,56 @@
 #ifndef QMYADDDIALOG_H
 #define QMYADDDIALOG_H
-//
-#include <QDialog>
+
+#include <QtGui/QDialog>
+
 class QLabel;
 class QLineEdit;
 class QDialogButtonBox;
-//
+
 class QMyAddDialog : public QDialog
 {
-Q_OBJECT
+	Q_OBJECT
+
 public:
-	QLabel*						qlFamil;
-	QLineEdit*					qleFamil;
-	QLabel*						qlName;
-	QLineEdit*					qleName;
-	QLabel*						qlOtch;
-	QLineEdit*					qleOtch;
-	QLabel*						qlSchet;
-	QLineEdit*					qleSchet;
-	QLabel*						qlMoney;
-	QLineEdit*					qleMoney;
-	
-	QDialogButtonBox*	qdbbButtons;
+	QLabel*						familLabel_;
+	QLineEdit*					familEdit_;
+	QLabel*						nameLabel_;
+	QLineEdit*					nameEdit_;
+	QLabel*						otchLabel_;
+	QLineEdit*					otchEdit_;
+	QLabel*						schetLabel_;
+	QLineEdit*					schetEdit_;
+	QLabel*						moneyLabel_;
+	QLineEdit*					moneyEdit_;
+
+	QDialogButtonBox*	buttons_;
+
 private:
 	void createControls();
 	void setLayouts();
 	void createConnects();
 	bool check();
-	void setErrorPalette(QWidget* qwWidget)
-	{
+	void setErrorPalette(QWidget* widget) {
 		QBrush brush(Qt::red);
-		QPalette palette=qwWidget->palette();
-		palette.setBrush(QPalette::Active, QPalette::Base, brush); 
-		qwWidget->setPalette(palette);
+		QPalette palette=widget->palette();
+		palette.setBrush(QPalette::Active, QPalette::Base, brush);
+		widget->setPalette(palette);
 	}
-	void setWarningPalette(QWidget* qwWidget)
-	{
+	void setWarningPalette(QWidget* widget) {
 		QBrush brush(Qt::yellow);
-		QPalette palette=qwWidget->palette();
-		palette.setBrush(QPalette::Active, QPalette::Base, brush); 
-		qwWidget->setPalette(palette);
+		QPalette palette=widget->palette();
+		palette.setBrush(QPalette::Active, QPalette::Base, brush);
+		widget->setPalette(palette);
 	}
+
 public:
 	QMyAddDialog( QWidget * parent = 0, Qt::WFlags f = Qt::WindowSystemMenuHint);
-	void startCheck() {slotCheck();}
-private slots:
-	int slotCheck();
-	void slotAccept();
+
+public Q_SLOTS:
+	int startCheck();
+
+private Q_SLOTS:
+	void checkAndAccept();
 };
 
 #endif

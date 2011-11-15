@@ -1,102 +1,111 @@
-#include <QtGui>
+#include <QtCore/QSettings>
+#include <QtCore/QDir>
+
+#include <QtGui/QLabel>
+#include <QtGui/QLineEdit>
+#include <QtGui/QPushButton>
+#include <QtGui/QDialogButtonBox>
+#include <QtGui/QGridLayout>
+#include <QtGui/QFileDialog>
+
 #include "qmypreferences.h"
 
 QMyPreferences::QMyPreferences(QWidget * parent, Qt::WindowFlags f)
 	:QDialog(parent,f)
 {
-	qsetAppSettings=new QSettings(QSettings::IniFormat,QSettings::UserScope,"PanteR","Bank");
+	applicationSettings_=new QSettings(QSettings::IniFormat,QSettings::UserScope,"PanteR","Bank");
 	createWidgets();
 	createLayouts();
 	createConnects();
 }
-//
+
 void QMyPreferences::createWidgets()
 {
-	qlOpenPath=new QLabel(tr("Dir with reestr"),this);
-	qleOpenPath=new QLineEdit(QDir::toNativeSeparators(qsetAppSettings->value("PATH/OpenPath","").toString()),this);
-	qpbOpenPath=new QPushButton(tr("Browse..."),this);
-	qlImportPath=new QLabel(tr("Dir for import"),this);
-	qleImportPath=new QLineEdit(QDir::toNativeSeparators(qsetAppSettings->value("PATH/ImportPath","").toString()),this);
-	qpbImportPath=new QPushButton(tr("Browse..."),this);
-	qlArchivesPath=new QLabel(tr("Dir for archives"),this);
-	qleArchivesPath=new QLineEdit(QDir::toNativeSeparators(qsetAppSettings->value("PATH/ArchivesPath","").toString()),this);
-	qpbArchivesPath=new QPushButton(tr("Browse..."),this);
-	qlOutPath=new QLabel(tr("Dir for out"),this);
-	qleOutPath=new QLineEdit(QDir::toNativeSeparators(qsetAppSettings->value("PATH/OutPath","").toString()),this);
-	qpbOutPath=new QPushButton(tr("Browse..."),this);
-	
-	qdbbButtonBox=new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Apply | QDialogButtonBox::Cancel);
+	openPathLabel_=new QLabel(tr("Dir with reestr"),this);
+	openPathEdit_=new QLineEdit(QDir::toNativeSeparators(applicationSettings_->value("PATH/OpenPath","").toString()),this);
+	openPathButton_=new QPushButton(tr("Browse..."),this);
+	importPathLabel_=new QLabel(tr("Dir for import"),this);
+	importPathEdit_=new QLineEdit(QDir::toNativeSeparators(applicationSettings_->value("PATH/ImportPath","").toString()),this);
+	importPathButton_=new QPushButton(tr("Browse..."),this);
+	archivesPathLabel_=new QLabel(tr("Dir for archives"),this);
+	archivesPathEdit_=new QLineEdit(QDir::toNativeSeparators(applicationSettings_->value("PATH/ArchivesPath","").toString()),this);
+	archivesPathButton_=new QPushButton(tr("Browse..."),this);
+	outPathLabel_=new QLabel(tr("Dir for out"),this);
+	outPathEdit_=new QLineEdit(QDir::toNativeSeparators(applicationSettings_->value("PATH/OutPath","").toString()),this);
+	outPathButton_=new QPushButton(tr("Browse..."),this);
+
+	buttons=new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Apply | QDialogButtonBox::Cancel);
 }
-//
+
 void QMyPreferences::createLayouts()
 {
 	QGridLayout* qglGridLayout=new QGridLayout();
-	qglGridLayout->addWidget(qlOpenPath,0,0);
-	qglGridLayout->addWidget(qleOpenPath,0,1);
-	qglGridLayout->addWidget(qpbOpenPath,0,2);
-	qglGridLayout->addWidget(qlImportPath,1,0);
-	qglGridLayout->addWidget(qleImportPath,1,1);
-	qglGridLayout->addWidget(qpbImportPath,1,2);
-	qglGridLayout->addWidget(qlArchivesPath,2,0);
-	qglGridLayout->addWidget(qleArchivesPath,2,1);
-	qglGridLayout->addWidget(qpbArchivesPath,2,2);
-	qglGridLayout->addWidget(qlOutPath,3,0);
-	qglGridLayout->addWidget(qleOutPath,3,1);
-	qglGridLayout->addWidget(qpbOutPath,3,2);
-	
+	qglGridLayout->addWidget(openPathLabel_,0,0);
+	qglGridLayout->addWidget(openPathEdit_,0,1);
+	qglGridLayout->addWidget(openPathButton_,0,2);
+	qglGridLayout->addWidget(importPathLabel_,1,0);
+	qglGridLayout->addWidget(importPathEdit_,1,1);
+	qglGridLayout->addWidget(importPathButton_,1,2);
+	qglGridLayout->addWidget(archivesPathLabel_,2,0);
+	qglGridLayout->addWidget(archivesPathEdit_,2,1);
+	qglGridLayout->addWidget(archivesPathButton_,2,2);
+	qglGridLayout->addWidget(outPathLabel_,3,0);
+	qglGridLayout->addWidget(outPathEdit_,3,1);
+	qglGridLayout->addWidget(outPathButton_,3,2);
+
 	QVBoxLayout* qvblMainLayout=new QVBoxLayout();
 	qvblMainLayout->addLayout(qglGridLayout);
-	qvblMainLayout->addWidget(qdbbButtonBox);
+	qvblMainLayout->addWidget(buttons);
 	setLayout(qvblMainLayout);
 }
-//
-void QMyPreferences::slotSavePreferences()
+
+void QMyPreferences::savePreferences()
 {
-	qsetAppSettings->setValue("PATH/OpenPath",qleOpenPath->text());
-	qsetAppSettings->setValue("PATH/ImportPath",qleImportPath->text());
-	qsetAppSettings->setValue("PATH/ArchivesPath",qleArchivesPath->text());
-	qsetAppSettings->setValue("PATH/OutPath",qleOutPath->text());
-	qsetAppSettings->sync();
+	applicationSettings_->setValue("PATH/OpenPath",openPathEdit_->text());
+	applicationSettings_->setValue("PATH/ImportPath",importPathEdit_->text());
+	applicationSettings_->setValue("PATH/ArchivesPath",archivesPathEdit_->text());
+	applicationSettings_->setValue("PATH/OutPath",outPathEdit_->text());
+	applicationSettings_->sync();
 }
-//
+
 void QMyPreferences::createConnects()
 {
-	connect(qdbbButtonBox->button(QDialogButtonBox::Apply),SIGNAL(pressed()),this,SLOT(slotSavePreferences()));
-	connect(qdbbButtonBox->button(QDialogButtonBox::Ok),SIGNAL(pressed()),this,SLOT(slotSavePreferences()));	
-	connect(qdbbButtonBox->button(QDialogButtonBox::Ok),SIGNAL(pressed()),this,SLOT(accept()));
-	connect(qdbbButtonBox->button(QDialogButtonBox::Cancel),SIGNAL(pressed()),this,SLOT(reject()));
-	
-	connect(qpbOpenPath,SIGNAL(pressed()),this,SLOT(slotSetOpenPath()));
-	connect(qpbImportPath,SIGNAL(pressed()),this,SLOT(slotSetImportPath()));
-	connect(qpbArchivesPath,SIGNAL(pressed()),this,SLOT(slotSetArchivesPath()));
-	connect(qpbOutPath,SIGNAL(pressed()),this,SLOT(slotSetOutPath()));
+	connect(buttons->button(QDialogButtonBox::Apply),SIGNAL(pressed()),this,SLOT(savePreferences()));
+	connect(buttons->button(QDialogButtonBox::Ok),SIGNAL(pressed()),this,SLOT(savePreferences()));
+	connect(buttons->button(QDialogButtonBox::Ok),SIGNAL(pressed()),this,SLOT(accept()));
+	connect(buttons->button(QDialogButtonBox::Cancel),SIGNAL(pressed()),this,SLOT(reject()));
+
+	connect(openPathButton_,SIGNAL(pressed()),this,SLOT(setOpenPath()));
+	connect(importPathButton_,SIGNAL(pressed()),this,SLOT(setImportPath()));
+	connect(archivesPathButton_,SIGNAL(pressed()),this,SLOT(setArchivesPath()));
+	connect(outPathButton_,SIGNAL(pressed()),this,SLOT(setOutPath()));
 }
-//
-void QMyPreferences::slotSetOpenPath()
+
+void QMyPreferences::setOpenPath()
 {
-	QString qsDir=QFileDialog::getExistingDirectory(this,"",qleOpenPath->text());
+	QString qsDir=QFileDialog::getExistingDirectory(this,"",openPathEdit_->text());
 	if (!qsDir.isEmpty())
-		qleOpenPath->setText(QDir::toNativeSeparators(qsDir));
+		openPathEdit_->setText(QDir::toNativeSeparators(qsDir));
 }
-//
-void QMyPreferences::slotSetImportPath()
+
+void QMyPreferences::setImportPath()
 {
-	QString qsDir=QFileDialog::getExistingDirectory(this,"",qleImportPath->text());
+	QString qsDir=QFileDialog::getExistingDirectory(this,"",importPathEdit_->text());
 	if (!qsDir.isEmpty())
-		qleImportPath->setText(QDir::toNativeSeparators(qsDir));
+		importPathEdit_->setText(QDir::toNativeSeparators(qsDir));
 }
-//
-void QMyPreferences::slotSetArchivesPath()
+
+void QMyPreferences::setArchivesPath()
 {
-	QString qsDir=QFileDialog::getExistingDirectory(this,"",qleArchivesPath->text());
+	QString qsDir=QFileDialog::getExistingDirectory(this,"",archivesPathEdit_->text());
 	if (!qsDir.isEmpty())
-		qleArchivesPath->setText(QDir::toNativeSeparators(qsDir));
+		archivesPathEdit_->setText(QDir::toNativeSeparators(qsDir));
 }
-//
-void QMyPreferences::slotSetOutPath()
+
+void QMyPreferences::setOutPath()
 {
-	QString qsDir=QFileDialog::getExistingDirectory(this,"",qleOutPath->text());
+	QString qsDir=QFileDialog::getExistingDirectory(this,"",outPathEdit_->text());
 	if (!qsDir.isEmpty())
-		qleOutPath->setText(QDir::toNativeSeparators(qsDir));
+		outPathEdit_->setText(QDir::toNativeSeparators(qsDir));
 }
-//
+
