@@ -21,14 +21,14 @@ include_directories(
 set (src_SRC
 src/main.cpp
 src/mainwindowimpl.cpp
-src/qmyadddialog.cpp
-src/qmypreferences.cpp
+src/adddialog.cpp
+src/preferences.cpp
 )
 
 set (src_HEADERS
 src/mainwindowimpl.h
-src/qmyadddialog.h
-src/qmypreferences.h
+src/adddialog.h
+src/preferences.h
 )
 
 ################################################################

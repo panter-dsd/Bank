@@ -8,9 +8,9 @@
 #include <QtGui/QGridLayout>
 #include <QtGui/QFileDialog>
 
-#include "qmypreferences.h"
+#include "preferences.h"
 
-QMyPreferences::QMyPreferences(QWidget * parent, Qt::WindowFlags f)
+Preferences::Preferences(QWidget * parent, Qt::WindowFlags f)
 	:QDialog(parent,f)
 {
 	applicationSettings_=new QSettings(QSettings::IniFormat,QSettings::UserScope,"PanteR","Bank");
@@ -19,7 +19,7 @@ QMyPreferences::QMyPreferences(QWidget * parent, Qt::WindowFlags f)
 	createConnects();
 }
 
-void QMyPreferences::createWidgets()
+void Preferences::createWidgets()
 {
 	openPathLabel_=new QLabel(tr("Dir with reestr"),this);
 	openPathEdit_=new QLineEdit(QDir::toNativeSeparators(applicationSettings_->value("PATH/OpenPath","").toString()),this);
@@ -37,7 +37,7 @@ void QMyPreferences::createWidgets()
 	buttons=new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Apply | QDialogButtonBox::Cancel);
 }
 
-void QMyPreferences::createLayouts()
+void Preferences::createLayouts()
 {
 	QGridLayout* qglGridLayout=new QGridLayout();
 	qglGridLayout->addWidget(openPathLabel_,0,0);
@@ -59,7 +59,7 @@ void QMyPreferences::createLayouts()
 	setLayout(qvblMainLayout);
 }
 
-void QMyPreferences::savePreferences()
+void Preferences::savePreferences()
 {
 	applicationSettings_->setValue("PATH/OpenPath",openPathEdit_->text());
 	applicationSettings_->setValue("PATH/ImportPath",importPathEdit_->text());
@@ -68,7 +68,7 @@ void QMyPreferences::savePreferences()
 	applicationSettings_->sync();
 }
 
-void QMyPreferences::createConnects()
+void Preferences::createConnects()
 {
 	connect(buttons->button(QDialogButtonBox::Apply),SIGNAL(pressed()),this,SLOT(savePreferences()));
 	connect(buttons->button(QDialogButtonBox::Ok),SIGNAL(pressed()),this,SLOT(savePreferences()));
@@ -81,28 +81,28 @@ void QMyPreferences::createConnects()
 	connect(outPathButton_,SIGNAL(pressed()),this,SLOT(setOutPath()));
 }
 
-void QMyPreferences::setOpenPath()
+void Preferences::setOpenPath()
 {
 	QString qsDir=QFileDialog::getExistingDirectory(this,"",openPathEdit_->text());
 	if (!qsDir.isEmpty())
 		openPathEdit_->setText(QDir::toNativeSeparators(qsDir));
 }
 
-void QMyPreferences::setImportPath()
+void Preferences::setImportPath()
 {
 	QString qsDir=QFileDialog::getExistingDirectory(this,"",importPathEdit_->text());
 	if (!qsDir.isEmpty())
 		importPathEdit_->setText(QDir::toNativeSeparators(qsDir));
 }
 
-void QMyPreferences::setArchivesPath()
+void Preferences::setArchivesPath()
 {
 	QString qsDir=QFileDialog::getExistingDirectory(this,"",archivesPathEdit_->text());
 	if (!qsDir.isEmpty())
 		archivesPathEdit_->setText(QDir::toNativeSeparators(qsDir));
 }
 
-void QMyPreferences::setOutPath()
+void Preferences::setOutPath()
 {
 	QString qsDir=QFileDialog::getExistingDirectory(this,"",outPathEdit_->text());
 	if (!qsDir.isEmpty())

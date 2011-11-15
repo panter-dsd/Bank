@@ -23,8 +23,8 @@
 #include <QtSql/QSqlError>
 #include <QtSql/QSqlQuery>
 
-#include "qmyadddialog.h"
-#include "qmypreferences.h"
+#include "adddialog.h"
+#include "preferences.h"
 
 #include "mainwindowimpl.h"
 
@@ -700,7 +700,7 @@ void MainWindowImpl::updateActions()
 
 void MainWindowImpl::addRecord()
 {
-	QMyAddDialog* qmadDialog=new QMyAddDialog(this);
+	AddDialog* qmadDialog=new AddDialog(this);
 	qmadDialog->setWindowTitle(tr("Adding"));
 	qmadDialog->setModal(true);
 	qmadDialog->startCheck();
@@ -732,7 +732,7 @@ void MainWindowImpl::editRecord()
 {
 	int iRow=table_->currentRow();
 	if (iRow<0) return;
-	QMyAddDialog* qmadDialog=new QMyAddDialog(this);
+	AddDialog* qmadDialog=new AddDialog(this);
 	qmadDialog->setWindowTitle(tr("Editing"));
 	qmadDialog->familEdit_->setText(table_->item(iRow,0)->text());
 	qmadDialog->nameEdit_->setText(table_->item(iRow,1)->text());
@@ -770,7 +770,7 @@ void MainWindowImpl::changeMoney()
 {
 	int iRow=table_->currentRow();
 	if (iRow<0) return;
-	QMyAddDialog* qmadDialog=new QMyAddDialog(this);
+	AddDialog* qmadDialog=new AddDialog(this);
 	qmadDialog->setWindowTitle(tr("Changing money"));
 	qmadDialog->familEdit_->setVisible(false);
 	qmadDialog->nameEdit_->setVisible(false);
@@ -1060,7 +1060,7 @@ void MainWindowImpl::out()
 
 void MainWindowImpl::preferences()
 {
-	QMyPreferences preferences;
+	Preferences preferences;
 	preferences.setWindowTitle(tr("Preferences"));
 	preferences.exec();
 }

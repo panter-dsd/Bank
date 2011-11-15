@@ -1,13 +1,15 @@
-#ifndef QMYPREFERENCES_H_
-#define QMYPREFERENCES_H_
-#include <QDialog>
+#ifndef PREFERENCES_H
+#define PREFERENCES_H
+
+#include <QtGui/QDialog>
+
 class QLabel;
 class QLineEdit;
 class QPushButton;
 class QDialogButtonBox;
 class QSettings;
 
-class QMyPreferences: public QDialog
+class Preferences: public QDialog
 {
 	Q_OBJECT
 
@@ -30,7 +32,7 @@ private:
 	QSettings*					applicationSettings_;
 
 public:
-	QMyPreferences(QWidget * parent = 0, Qt::WindowFlags f = Qt::WindowSystemMenuHint);
+	Preferences(QWidget * parent = 0, Qt::WindowFlags f = Qt::WindowSystemMenuHint);
 
 private:
 	void createWidgets();
@@ -45,4 +47,4 @@ private Q_SLOTS:
 	void setOutPath();
 };
 
-#endif /*QMYPREFERENCES_H_*/
+#endif //PREFERENCES_H

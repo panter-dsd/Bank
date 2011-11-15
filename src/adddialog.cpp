@@ -7,9 +7,9 @@
 #include <QtGui/QGridLayout>
 #include <QtGui/QApplication>
 
-#include "qmyadddialog.h"
+#include "adddialog.h"
 
-QMyAddDialog::QMyAddDialog(QWidget * parent, Qt::WFlags f)
+AddDialog::AddDialog(QWidget * parent, Qt::WFlags f)
 	: QDialog(parent,f)
 {
 	createControls();
@@ -17,7 +17,7 @@ QMyAddDialog::QMyAddDialog(QWidget * parent, Qt::WFlags f)
 	createConnects();
 }
 
-void QMyAddDialog::createControls()
+void AddDialog::createControls()
 {
 	familLabel_=new QLabel(tr("Famil"),this);
 	familEdit_=new QLineEdit(this);
@@ -36,7 +36,7 @@ void QMyAddDialog::createControls()
 	buttons_=new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 }
 
-void QMyAddDialog::setLayouts()
+void AddDialog::setLayouts()
 {
 	QGridLayout* qglLayout=new QGridLayout();
 	qglLayout->addWidget(familLabel_,0,0);
@@ -57,7 +57,7 @@ void QMyAddDialog::setLayouts()
 	setLayout(qvblLayout);
 }
 
-void QMyAddDialog::checkAndAccept()
+void AddDialog::checkAndAccept()
 {
 	int checkRez=startCheck();
 	switch (checkRez)
@@ -84,7 +84,7 @@ void QMyAddDialog::checkAndAccept()
 	}
 }
 
-int QMyAddDialog::startCheck()
+int AddDialog::startCheck()
 {
 	int iValid=0;
 	if (familEdit_->isVisible() && (familEdit_->text().isEmpty()))
@@ -118,7 +118,7 @@ int QMyAddDialog::startCheck()
 	return iValid;
 }
 
-void QMyAddDialog::createConnects()
+void AddDialog::createConnects()
 {
 	connect(familEdit_,SIGNAL(editingFinished ()),this,SLOT(startCheck()));
 	connect(nameEdit_,SIGNAL(editingFinished ()),this,SLOT(startCheck()));

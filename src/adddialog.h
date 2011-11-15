@@ -1,5 +1,5 @@
-#ifndef QMYADDDIALOG_H
-#define QMYADDDIALOG_H
+#ifndef ADDDIALOG_H
+#define ADDDIALOG_H
 
 #include <QtGui/QDialog>
 
@@ -7,7 +7,7 @@ class QLabel;
 class QLineEdit;
 class QDialogButtonBox;
 
-class QMyAddDialog : public QDialog
+class AddDialog : public QDialog
 {
 	Q_OBJECT
 
@@ -44,7 +44,7 @@ private:
 	}
 
 public:
-	QMyAddDialog( QWidget * parent = 0, Qt::WFlags f = Qt::WindowSystemMenuHint);
+	AddDialog( QWidget * parent = 0, Qt::WFlags f = Qt::WindowSystemMenuHint);
 
 public Q_SLOTS:
 	int startCheck();
@@ -53,4 +53,4 @@ private Q_SLOTS:
 	void checkAndAccept();
 };
 
-#endif
+#endif //ADDDIALOG_H
