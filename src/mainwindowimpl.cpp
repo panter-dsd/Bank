@@ -407,62 +407,62 @@ bool MainWindowImpl::loadFile(const QString& qsFileName)
 		QMessageBox::critical(0, tr("Error connect"), QSqlDatabase::database ().lastError().text());
 		return false;
 	}
-	QSqlQuery* qsqQuery=new QSqlQuery();
-	qsqQuery->prepare("SELECT COUNT(A) FROM "+QFileInfo(qsFileName).baseName());
-	if (!qsqQuery->exec())
+	QSqlQuery query;
+	query.prepare("SELECT COUNT(A) FROM "+QFileInfo(qsFileName).baseName());
+	if (!query.exec())
 	{
-		QMessageBox::critical(0, tr("Error load table"), qsqQuery->lastError().text());
+		QMessageBox::critical(0, tr("Error load table"), query.lastError().text());
 		return false;
 	}
-	qsqQuery->first();
-	QProgressDialog* qpdProgress=new QProgressDialog(tr("Loading wait..."), tr("No"),0,qsqQuery->value(0).toInt() , this);
+	query.first();
+	QProgressDialog* qpdProgress=new QProgressDialog(tr("Loading wait..."), tr("No"),0,query.value(0).toInt() , this);
 	qpdProgress->setWindowModality(Qt::WindowModal);
-	qsqQuery->clear();
+	query.clear();
 
-	qsqQuery->prepare("SELECT * FROM "+QFileInfo(qsFileName).baseName());
-	if (!qsqQuery->exec())
+	query.prepare("SELECT * FROM "+QFileInfo(qsFileName).baseName());
+	if (!query.exec())
 	{
-		QMessageBox::critical(0, tr("Error load table"), qsqQuery->lastError().text());
+		QMessageBox::critical(0, tr("Error load table"), query.lastError().text());
 		return false;
 	}
-	qsqQuery->first();
+	query.first();
 	table_->clearContents();
 	table_->setRowCount(0);
 	QTableWidgetItem *item;
 	int iRow=0;
 //Read header
-	filialNameEdit_->setText(qsqQuery->value(0).toString().replace(tr("#"),tr("№")));
-	qsqQuery->next();
+	filialNameEdit_->setText(query.value(0).toString().replace(tr("#"),tr("№")));
+	query.next();
 	qpdProgress->setValue(qpdProgress->value()+1);
-	platNumberEdit_->setText(qsqQuery->value(1).toString());
-	platDateEdit_->setDate(QDate().fromString(qsqQuery->value(3).toString(),"dd.MM.yyyy"));
-	qsqQuery->next();
+	platNumberEdit_->setText(query.value(1).toString());
+	platDateEdit_->setDate(QDate().fromString(query.value(3).toString(),"dd.MM.yyyy"));
+	query.next();
 	qpdProgress->setValue(qpdProgress->value()+1);
-	vidEdit_->setCurrentIndex(qsqQuery->value(1).toInt()-1);
-	qsqQuery->next();
+	vidEdit_->setCurrentIndex(query.value(1).toInt()-1);
+	query.next();
 	qpdProgress->setValue(qpdProgress->value()+1);
-	organizationNameEdit_->setText(qsqQuery->value(1).toString().replace(tr("#"),tr("№")));
-	schetOrganizationEdit_->setText(qsqQuery->value(2).toString());
-	qsqQuery->next();
+	organizationNameEdit_->setText(query.value(1).toString().replace(tr("#"),tr("№")));
+	schetOrganizationEdit_->setText(query.value(2).toString());
+	query.next();
 	qpdProgress->setValue(qpdProgress->value()+1);
-	dogovorNumberEdit_->setText(qsqQuery->value(1).toString());
-	dogovorDateEdit_->setDate(QDate().fromString(qsqQuery->value(3).toString(),"dd.MM.yyyy"));
-	qsqQuery->next();
+	dogovorNumberEdit_->setText(query.value(1).toString());
+	dogovorDateEdit_->setDate(QDate().fromString(query.value(3).toString(),"dd.MM.yyyy"));
+	query.next();
 	qpdProgress->setValue(qpdProgress->value()+1);
 //End read header
 	table_->setUpdatesEnabled(false);
 	table_->setRowCount(qpdProgress->maximum()-5);
-	while (qsqQuery->next())
+	while (query.next())
 	{
-		item=new QTableWidgetItem(qsqQuery->value(2).toString());
+		item=new QTableWidgetItem(query.value(2).toString());
 		table_->setItem(iRow,0,item);
-		item=new QTableWidgetItem(qsqQuery->value(3).toString());
+		item=new QTableWidgetItem(query.value(3).toString());
 		table_->setItem(iRow,1,item);
-		item=new QTableWidgetItem(qsqQuery->value(4).toString());
+		item=new QTableWidgetItem(query.value(4).toString());
 		table_->setItem(iRow,2,item);
-		item=new QTableWidgetItem(qsqQuery->value(1).toString());
+		item=new QTableWidgetItem(query.value(1).toString());
 		table_->setItem(iRow,3,item);
-		item=new QTableWidgetItem(qsqQuery->value(5).toString());
+		item=new QTableWidgetItem(query.value(5).toString());
 		item->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
 		table_->setItem(iRow,4,item);
 		iRow++;
@@ -472,7 +472,7 @@ bool MainWindowImpl::loadFile(const QString& qsFileName)
 	qpdProgress->setValue(qpdProgress->maximum());
 	QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 	delete qpdProgress;
-	qsqQuery->clear();
+	query.clear();
 	QSqlDatabase::database ().close();
 
 	table_->removeRow(table_->rowCount()-1);
@@ -550,93 +550,86 @@ bool MainWindowImpl::saveFile(const QString& qsFileName)
 		return false;
 	}
 	QString qsTableName=QFileInfo(qsFileName).baseName();
-	QSqlQuery* qsqQuery=new QSqlQuery();
-	qsqQuery->prepare("CREATE TABLE "+qsTableName+" (A CHAR(30),B CHAR(30),C CHAR(30),D CHAR(30),E CHAR(30),F CHAR(30),G CHAR(30));");
-	if (!qsqQuery->exec())
+	QSqlQuery query;
+	query.prepare("CREATE TABLE "+qsTableName+" (A CHAR(30),B CHAR(30),C CHAR(30),D CHAR(30),E CHAR(30),F CHAR(30),G CHAR(30));");
+	if (!query.exec())
 	{
-		QMessageBox::critical(this, tr("Error save file"), qsqQuery->lastError().text());
-		delete qsqQuery;
+		QMessageBox::critical(this, tr("Error save file"), query.lastError().text());
 		return false;
 	}
-	qsqQuery->clear();
+	query.clear();
 
-	qsqQuery->prepare("INSERT INTO "+qsTableName+"(A) VALUES (:a);");
-	qsqQuery->bindValue(":a",filialNameEdit_->text().replace(tr("№"),tr("#")));
-	if (!qsqQuery->exec())
+	query.prepare("INSERT INTO "+qsTableName+"(A) VALUES (:a);");
+	query.bindValue(":a",filialNameEdit_->text().replace(tr("№"),tr("#")));
+	if (!query.exec())
 	{
-		QMessageBox::critical(this, tr("Error save file"), qsqQuery->lastError().text());
-		delete qsqQuery;
+		QMessageBox::critical(this, tr("Error save file"), query.lastError().text());
 		return false;
 	}
-	qsqQuery->clear();
+	query.clear();
 
-	qsqQuery->prepare("INSERT INTO "+qsTableName+"(A,B,C,D) VALUES (:a,:b,:c,:d);");
-	qsqQuery->bindValue(":a",tr("К платежному поручению #"));
-	qsqQuery->bindValue(":b",platNumberEdit_->text());
-	qsqQuery->bindValue(":c",tr("от"));
+	query.prepare("INSERT INTO "+qsTableName+"(A,B,C,D) VALUES (:a,:b,:c,:d);");
+	query.bindValue(":a",tr("К платежному поручению #"));
+	query.bindValue(":b",platNumberEdit_->text());
+	query.bindValue(":c",tr("от"));
 	if (!platNumberEdit_->text().isEmpty())
-		qsqQuery->bindValue(":d",platDateEdit_->date().toString("dd.MM.yyyy"));
+		query.bindValue(":d",platDateEdit_->date().toString("dd.MM.yyyy"));
 	else
-		qsqQuery->bindValue(":d","");
-	if (!qsqQuery->exec())
+		query.bindValue(":d","");
+	if (!query.exec())
 	{
-		QMessageBox::critical(this, tr("Error save base"), qsqQuery->lastError().text());
-		delete qsqQuery;
+		QMessageBox::critical(this, tr("Error save base"), query.lastError().text());
 		return false;
 	}
-	qsqQuery->clear();
+	query.clear();
 
-	qsqQuery->prepare("INSERT INTO "+qsTableName+"(A,B) VALUES (:a,:b);");
-	qsqQuery->bindValue(":a",tr("Зачисление"));
-	qsqQuery->bindValue(":b",tr("0")+QString().setNum(vidEdit_->currentIndex()+1));
-	if (!qsqQuery->exec())
+	query.prepare("INSERT INTO "+qsTableName+"(A,B) VALUES (:a,:b);");
+	query.bindValue(":a",tr("Зачисление"));
+	query.bindValue(":b",tr("0")+QString().setNum(vidEdit_->currentIndex()+1));
+	if (!query.exec())
 	{
-		QMessageBox::critical(this, tr("Error save base"), qsqQuery->lastError().text());
-		delete qsqQuery;
+		QMessageBox::critical(this, tr("Error save base"), query.lastError().text());
 		return false;
 	}
-	qsqQuery->clear();
+	query.clear();
 
-	qsqQuery->prepare("INSERT INTO "+qsTableName+"(A,B,C) VALUES (:a,:b,:c);");
-	qsqQuery->bindValue(":a",tr("Наименование,ОГРН,# банк.счета"));
-	qsqQuery->bindValue(":b",organizationNameEdit_->text().replace(tr("№"),tr("#")));
-	qsqQuery->bindValue(":c",schetOrganizationEdit_->text());
-	if (!qsqQuery->exec())
+	query.prepare("INSERT INTO "+qsTableName+"(A,B,C) VALUES (:a,:b,:c);");
+	query.bindValue(":a",tr("Наименование,ОГРН,# банк.счета"));
+	query.bindValue(":b",organizationNameEdit_->text().replace(tr("№"),tr("#")));
+	query.bindValue(":c",schetOrganizationEdit_->text());
+	if (!query.exec())
 	{
-		QMessageBox::critical(this, tr("Error save base"), qsqQuery->lastError().text());
-		delete qsqQuery;
+		QMessageBox::critical(this, tr("Error save base"), query.lastError().text());
 		return false;
 	}
-	qsqQuery->clear();
+	query.clear();
 
-	qsqQuery->prepare("INSERT INTO "+qsTableName+"(A,B,C,D) VALUES (:a,:b,:c,:d);");
-	qsqQuery->bindValue(":a",tr("По договору:"));
-	qsqQuery->bindValue(":b",dogovorNumberEdit_->text());
-	qsqQuery->bindValue(":c",tr("от"));
-	qsqQuery->bindValue(":d",dogovorDateEdit_->date().toString("dd.MM.yyyy"));
-	if (!qsqQuery->exec())
+	query.prepare("INSERT INTO "+qsTableName+"(A,B,C,D) VALUES (:a,:b,:c,:d);");
+	query.bindValue(":a",tr("По договору:"));
+	query.bindValue(":b",dogovorNumberEdit_->text());
+	query.bindValue(":c",tr("от"));
+	query.bindValue(":d",dogovorDateEdit_->date().toString("dd.MM.yyyy"));
+	if (!query.exec())
 	{
-		QMessageBox::critical(this, tr("Error save base"), qsqQuery->lastError().text());
-		delete qsqQuery;
+		QMessageBox::critical(this, tr("Error save base"), query.lastError().text());
 		return false;
 	}
-	qsqQuery->clear();
+	query.clear();
 
-	qsqQuery->prepare("INSERT INTO "+qsTableName+"(A,B,C,D,E,F,G) VALUES (:a,:b,:c,:d,:e,:f,:g);");
-	qsqQuery->bindValue(":a",tr("# п/п"));
-	qsqQuery->bindValue(":b",tr("Номер счета"));
-	qsqQuery->bindValue(":c",tr("Фамилия"));
-	qsqQuery->bindValue(":d",tr("Имя"));
-	qsqQuery->bindValue(":e",tr("Отчество"));
-	qsqQuery->bindValue(":f",tr("Сумма"));
-	qsqQuery->bindValue(":g",tr("Примечание"));
-	if (!qsqQuery->exec())
+	query.prepare("INSERT INTO "+qsTableName+"(A,B,C,D,E,F,G) VALUES (:a,:b,:c,:d,:e,:f,:g);");
+	query.bindValue(":a",tr("# п/п"));
+	query.bindValue(":b",tr("Номер счета"));
+	query.bindValue(":c",tr("Фамилия"));
+	query.bindValue(":d",tr("Имя"));
+	query.bindValue(":e",tr("Отчество"));
+	query.bindValue(":f",tr("Сумма"));
+	query.bindValue(":g",tr("Примечание"));
+	if (!query.exec())
 	{
-		QMessageBox::critical(this, tr("Error save base"), qsqQuery->lastError().text());
-		delete qsqQuery;
+		QMessageBox::critical(this, tr("Error save base"), query.lastError().text());
 		return false;
 	}
-	qsqQuery->clear();
+	query.clear();
 
 	int iNullCount=0;
 	for (int i=0; i<table_->rowCount(); i++)
@@ -646,33 +639,30 @@ bool MainWindowImpl::saveFile(const QString& qsFileName)
 			iNullCount++;
 			continue;
 		}
-		qsqQuery->prepare("INSERT INTO "+qsTableName+"(A,B,C,D,E,F) VALUES (:a,:b,:c,:d,:e,:f);");
-		qsqQuery->bindValue(":a",QString().setNum(i+1-iNullCount));
-		qsqQuery->bindValue(":b",table_->item(i,3)->text());
-		qsqQuery->bindValue(":c",table_->item(i,0)->text());
-		qsqQuery->bindValue(":d",table_->item(i,1)->text());
-		qsqQuery->bindValue(":e",table_->item(i,2)->text());
-		qsqQuery->bindValue(":f",table_->item(i,4)->text());
-		if (!qsqQuery->exec())
+		query.prepare("INSERT INTO "+qsTableName+"(A,B,C,D,E,F) VALUES (:a,:b,:c,:d,:e,:f);");
+		query.bindValue(":a",QString().setNum(i+1-iNullCount));
+		query.bindValue(":b",table_->item(i,3)->text());
+		query.bindValue(":c",table_->item(i,0)->text());
+		query.bindValue(":d",table_->item(i,1)->text());
+		query.bindValue(":e",table_->item(i,2)->text());
+		query.bindValue(":f",table_->item(i,4)->text());
+		if (!query.exec())
 		{
-			QMessageBox::critical(this, tr("Error save base"), qsqQuery->lastError().text());
-			delete qsqQuery;
+			QMessageBox::critical(this, tr("Error save base"), query.lastError().text());
 			return false;
 		}
-		qsqQuery->clear();
+		query.clear();
 	}
 
-	qsqQuery->prepare("INSERT INTO "+qsTableName+"(B,F) VALUES (:b,:f);");
-	qsqQuery->bindValue(":b",tr("ИТОГО:"));
-	qsqQuery->bindValue(":f",QString().setNum(getSum(),'f',2));
-	if (!qsqQuery->exec())
+	query.prepare("INSERT INTO "+qsTableName+"(B,F) VALUES (:b,:f);");
+	query.bindValue(":b",tr("ИТОГО:"));
+	query.bindValue(":f",QString().setNum(getSum(),'f',2));
+	if (!query.exec())
 	{
-		QMessageBox::critical(this, tr("Error save base"), qsqQuery->lastError().text());
-		delete qsqQuery;
+		QMessageBox::critical(this, tr("Error save base"), query.lastError().text());
 		return false;
 	}
-	qsqQuery->clear();
-	delete qsqQuery;
+	query.clear();
 	QSqlDatabase::database ().close();
 	setCurrentFile(qsFileName);
 	return true;
@@ -700,30 +690,29 @@ void MainWindowImpl::updateActions()
 
 void MainWindowImpl::addRecord()
 {
-	AddDialog* qmadDialog=new AddDialog(this);
-	qmadDialog->setWindowTitle(tr("Adding"));
-	qmadDialog->setModal(true);
-	qmadDialog->startCheck();
-	if (qmadDialog->exec())
+	AddDialog addDialog (this);
+	addDialog.setWindowTitle(tr("Adding"));
+	addDialog.setModal(true);
+	addDialog.startCheck();
+	if (addDialog.exec())
 	{
 		table_->insertRow(table_->rowCount());
 		int iRow=table_->rowCount()-1;
 		QTableWidgetItem* item;
-		item=new QTableWidgetItem(qmadDialog->familEdit_->text());
+		item=new QTableWidgetItem(addDialog.familEdit_->text());
 		table_->setItem(iRow,0,item);
-		item=new QTableWidgetItem(qmadDialog->nameEdit_->text());
+		item=new QTableWidgetItem(addDialog.nameEdit_->text());
 		table_->setItem(iRow,1,item);
-		item=new QTableWidgetItem(qmadDialog->otchEdit_->text());
+		item=new QTableWidgetItem(addDialog.otchEdit_->text());
 		table_->setItem(iRow,2,item);
-		item=new QTableWidgetItem(qmadDialog->schetEdit_->text());
+		item=new QTableWidgetItem(addDialog.schetEdit_->text());
 		table_->setItem(iRow,3,item);
-		item=new QTableWidgetItem(QString().setNum(qmadDialog->moneyEdit_->text().toDouble(),'f',2).replace(',','.'));
+		item=new QTableWidgetItem(QString().setNum(addDialog.moneyEdit_->text().toDouble(),'f',2).replace(',','.'));
 		item->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
 		table_->setItem(iRow,4,item);
 		table_->selectRow(iRow);
 		setWindowModified(true);
 	}
-	delete qmadDialog;
 	updateActions();
 	checkReestr();
 }
@@ -732,24 +721,23 @@ void MainWindowImpl::editRecord()
 {
 	int iRow=table_->currentRow();
 	if (iRow<0) return;
-	AddDialog* qmadDialog=new AddDialog(this);
-	qmadDialog->setWindowTitle(tr("Editing"));
-	qmadDialog->familEdit_->setText(table_->item(iRow,0)->text());
-	qmadDialog->nameEdit_->setText(table_->item(iRow,1)->text());
-	qmadDialog->otchEdit_->setText(table_->item(iRow,2)->text());
-	qmadDialog->schetEdit_->setText(table_->item(iRow,3)->text());
-	qmadDialog->moneyEdit_->setText(table_->item(iRow,4)->text());
-	qmadDialog->startCheck();
-	if (qmadDialog->exec())
+	AddDialog editDialog (this);
+	editDialog.setWindowTitle(tr("Editing"));
+	editDialog.familEdit_->setText(table_->item(iRow,0)->text());
+	editDialog.nameEdit_->setText(table_->item(iRow,1)->text());
+	editDialog.otchEdit_->setText(table_->item(iRow,2)->text());
+	editDialog.schetEdit_->setText(table_->item(iRow,3)->text());
+	editDialog.moneyEdit_->setText(table_->item(iRow,4)->text());
+	editDialog.startCheck();
+	if (editDialog.exec())
 	{
-		table_->item(iRow,0)->setText(qmadDialog->familEdit_->text());
-		table_->item(iRow,1)->setText(qmadDialog->nameEdit_->text());
-		table_->item(iRow,2)->setText(qmadDialog->otchEdit_->text());
-		table_->item(iRow,3)->setText(qmadDialog->schetEdit_->text());
-		table_->item(iRow,4)->setText(QString().setNum(qmadDialog->moneyEdit_->text().toDouble(),'f',2).replace(',','.'));
+		table_->item(iRow,0)->setText(editDialog.familEdit_->text());
+		table_->item(iRow,1)->setText(editDialog.nameEdit_->text());
+		table_->item(iRow,2)->setText(editDialog.otchEdit_->text());
+		table_->item(iRow,3)->setText(editDialog.schetEdit_->text());
+		table_->item(iRow,4)->setText(QString().setNum(editDialog.moneyEdit_->text().toDouble(),'f',2).replace(',','.'));
 		setWindowModified(true);
 	}
-	delete qmadDialog;
 	updateActions();
 	checkReestr();
 }
@@ -770,24 +758,23 @@ void MainWindowImpl::changeMoney()
 {
 	int iRow=table_->currentRow();
 	if (iRow<0) return;
-	AddDialog* qmadDialog=new AddDialog(this);
-	qmadDialog->setWindowTitle(tr("Changing money"));
-	qmadDialog->familEdit_->setVisible(false);
-	qmadDialog->nameEdit_->setVisible(false);
-	qmadDialog->otchEdit_->setVisible(false);
-	qmadDialog->schetEdit_->setVisible(false);
-	qmadDialog->familLabel_->setVisible(false);
-	qmadDialog->nameLabel_->setVisible(false);
-	qmadDialog->otchLabel_->setVisible(false);
-	qmadDialog->schetLabel_->setVisible(false);
-	qmadDialog->moneyEdit_->setText(table_->item(iRow,4)->text());
-	qmadDialog->moneyEdit_->selectAll();
-	if (qmadDialog->exec())
+	AddDialog dialog (this);
+	dialog.setWindowTitle(tr("Changing money"));
+	dialog.familEdit_->setVisible(false);
+	dialog.nameEdit_->setVisible(false);
+	dialog.otchEdit_->setVisible(false);
+	dialog.schetEdit_->setVisible(false);
+	dialog.familLabel_->setVisible(false);
+	dialog.nameLabel_->setVisible(false);
+	dialog.otchLabel_->setVisible(false);
+	dialog.schetLabel_->setVisible(false);
+	dialog.moneyEdit_->setText(table_->item(iRow,4)->text());
+	dialog.moneyEdit_->selectAll();
+	if (dialog.exec())
 	{
-		table_->item(iRow,4)->setText(QString().setNum(qmadDialog->moneyEdit_->text().toDouble(),'f',2).replace(',','.'));
+		table_->item(iRow,4)->setText(QString().setNum(dialog.moneyEdit_->text().toDouble(),'f',2).replace(',','.'));
 		setWindowModified(true);
 	}
-	delete qmadDialog;
 	updateActions();
 	checkReestr();
 }
