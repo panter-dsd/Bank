@@ -14,25 +14,25 @@ class Preferences: public QDialog
 	Q_OBJECT
 
 private:
-	QLabel*						openPathLabel_;
-	QLineEdit*					openPathEdit_;
-	QPushButton*				openPathButton_;
-	QLabel*						importPathLabel_;
-	QLineEdit*					importPathEdit_;
-	QPushButton*				importPathButton_;
-	QLabel*						archivesPathLabel_;
-	QLineEdit*					archivesPathEdit_;
-	QPushButton*				archivesPathButton_;
-	QLabel*						outPathLabel_;
-	QLineEdit*					outPathEdit_;
-	QPushButton*				outPathButton_;
+	QLabel						*openPathLabel_;
+	QLineEdit					*openPathEdit_;
+	QPushButton				*openPathButton_;
+	QLabel						*importPathLabel_;
+	QLineEdit					*importPathEdit_;
+	QPushButton				*importPathButton_;
+	QLabel						*archivesPathLabel_;
+	QLineEdit					*archivesPathEdit_;
+	QPushButton				*archivesPathButton_;
+	QLabel						*outPathLabel_;
+	QLineEdit					*outPathEdit_;
+	QPushButton				*outPathButton_;
 
-	QDialogButtonBox*	buttons;
+	QDialogButtonBox	*buttons;
 
-	QSettings*					applicationSettings_;
+	QSettings					*applicationSettings_;
 
 public:
-	Preferences(QWidget * parent = 0, Qt::WindowFlags f = Qt::WindowSystemMenuHint);
+	Preferences (QWidget *parent = 0, Qt::WindowFlags f = Qt::WindowSystemMenuHint);
 
 private:
 	void createWidgets();
