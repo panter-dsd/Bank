@@ -38,49 +38,48 @@ void AddDialog::createControls()
 
 void AddDialog::setLayouts()
 {
-	QGridLayout *qglLayout = new QGridLayout();
-	qglLayout->addWidget (familLabel_, 0, 0);
-	qglLayout->addWidget (familEdit_, 0, 1);
-	qglLayout->addWidget (nameLabel_, 1, 0);
-	qglLayout->addWidget (nameEdit_, 1, 1);
-	qglLayout->addWidget (otchLabel_, 2, 0);
-	qglLayout->addWidget (otchEdit_, 2, 1);
-	qglLayout->addWidget (schetLabel_, 3, 0);
-	qglLayout->addWidget (schetEdit_, 3, 1);
-	qglLayout->addWidget (moneyLabel_, 4, 0);
-	qglLayout->addWidget (moneyEdit_, 4, 1);
+	QGridLayout *gridLayout = new QGridLayout();
+	gridLayout->addWidget (familLabel_, 0, 0);
+	gridLayout->addWidget (familEdit_, 0, 1);
+	gridLayout->addWidget (nameLabel_, 1, 0);
+	gridLayout->addWidget (nameEdit_, 1, 1);
+	gridLayout->addWidget (otchLabel_, 2, 0);
+	gridLayout->addWidget (otchEdit_, 2, 1);
+	gridLayout->addWidget (schetLabel_, 3, 0);
+	gridLayout->addWidget (schetEdit_, 3, 1);
+	gridLayout->addWidget (moneyLabel_, 4, 0);
+	gridLayout->addWidget (moneyEdit_, 4, 1);
 
-	QVBoxLayout *qvblLayout = new QVBoxLayout();
-	qvblLayout->addLayout (qglLayout);
-	qvblLayout->addWidget (buttons_);
+	QVBoxLayout *mainLayout = new QVBoxLayout();
+	mainLayout->addLayout (gridLayout);
+	mainLayout->addWidget (buttons_);
 
-	setLayout (qvblLayout);
+	setLayout (mainLayout);
 }
 
 void AddDialog::checkAndAccept()
 {
-	int checkRez = startCheck();
+	const int checkResult = startCheck();
 
-	switch (checkRez) {
+	switch (checkResult) {
 		case 0: {
 			accept();
 			break;
 		}
 		case 1: {
-			QMessageBox::critical (this,
-								   tr ("Error"),
-								   tr ("Find errors"));
+			QMessageBox::critical (this, tr ("Error"), tr ("Find errors"));
 			break;
 		}
 		case 2: {
-			int rez = QMessageBox::critical (this,
+			const int result = QMessageBox::critical (this,
 											 tr ("Warning"),
 											 tr ("Find warnings. Continue?"),
 											 QMessageBox::Yes,
 											 QMessageBox::No);
 
-			if (rez == QMessageBox::Yes)
+			if (result == QMessageBox::Yes) {
 				accept();
+			}
 
 			break;
 		}
@@ -89,44 +88,43 @@ void AddDialog::checkAndAccept()
 
 int AddDialog::startCheck()
 {
-	int iValid = 0;
+	int isValid = 0;
 
 	if (familEdit_->isVisible() && (familEdit_->text().isEmpty())) {
 		setErrorPalette (familEdit_);
-		iValid = 1;
+		isValid = 1;
 	} else
 		familEdit_->setPalette (QApplication::palette());
 
 	if (nameEdit_->isVisible() && (nameEdit_->text().isEmpty())) {
 		setErrorPalette (nameEdit_);
-		iValid = 1;
+		isValid = 1;
 	} else
 		nameEdit_->setPalette (QApplication::palette());
 
 	if (otchEdit_->isVisible() && (otchEdit_->text().isEmpty())) {
 		setWarningPalette (otchEdit_);
 
-		if (iValid == 0)
-			iValid = 2;
+		if (isValid == 0)
+			isValid = 2;
 	} else
 		otchEdit_->setPalette (QApplication::palette());
 
 	if (schetEdit_->isVisible() && (schetEdit_->text().isEmpty() || (schetEdit_->text().count() != 20))) {
 		setErrorPalette (schetEdit_);
-		iValid = 1;
+		isValid = 1;
 	} else
 		schetEdit_->setPalette (QApplication::palette());
 
-	return iValid;
+	return isValid;
 }
 
 void AddDialog::createConnects()
 {
-	connect (familEdit_, SIGNAL (editingFinished ()), this, SLOT (startCheck()));
-	connect (nameEdit_, SIGNAL (editingFinished ()), this, SLOT (startCheck()));
-	connect (otchEdit_, SIGNAL (editingFinished ()), this, SLOT (startCheck()));
-	connect (schetEdit_, SIGNAL (editingFinished ()), this, SLOT (startCheck()));
-	connect (buttons_, SIGNAL (accepted()), this, SLOT (checkAndAccept()));
-	connect (buttons_, SIGNAL (rejected()), this, SLOT (reject()));
+	connect (familEdit_, SIGNAL (editingFinished ()), SLOT (startCheck()));
+	connect (nameEdit_, SIGNAL (editingFinished ()), SLOT (startCheck()));
+	connect (otchEdit_, SIGNAL (editingFinished ()), SLOT (startCheck()));
+	connect (schetEdit_, SIGNAL (editingFinished ()), SLOT (startCheck()));
+	connect (buttons_, SIGNAL (accepted()), SLOT (checkAndAccept()));
+	connect (buttons_, SIGNAL (rejected()), SLOT (reject()));
 }
-

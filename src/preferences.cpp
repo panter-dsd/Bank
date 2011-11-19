@@ -39,24 +39,24 @@ void Preferences::createWidgets()
 
 void Preferences::createLayouts()
 {
-	QGridLayout *qglGridLayout = new QGridLayout();
-	qglGridLayout->addWidget (openPathLabel_, 0, 0);
-	qglGridLayout->addWidget (openPathEdit_, 0, 1);
-	qglGridLayout->addWidget (openPathButton_, 0, 2);
-	qglGridLayout->addWidget (importPathLabel_, 1, 0);
-	qglGridLayout->addWidget (importPathEdit_, 1, 1);
-	qglGridLayout->addWidget (importPathButton_, 1, 2);
-	qglGridLayout->addWidget (archivesPathLabel_, 2, 0);
-	qglGridLayout->addWidget (archivesPathEdit_, 2, 1);
-	qglGridLayout->addWidget (archivesPathButton_, 2, 2);
-	qglGridLayout->addWidget (outPathLabel_, 3, 0);
-	qglGridLayout->addWidget (outPathEdit_, 3, 1);
-	qglGridLayout->addWidget (outPathButton_, 3, 2);
+	QGridLayout *gridLayout = new QGridLayout();
+	gridLayout->addWidget (openPathLabel_, 0, 0);
+	gridLayout->addWidget (openPathEdit_, 0, 1);
+	gridLayout->addWidget (openPathButton_, 0, 2);
+	gridLayout->addWidget (importPathLabel_, 1, 0);
+	gridLayout->addWidget (importPathEdit_, 1, 1);
+	gridLayout->addWidget (importPathButton_, 1, 2);
+	gridLayout->addWidget (archivesPathLabel_, 2, 0);
+	gridLayout->addWidget (archivesPathEdit_, 2, 1);
+	gridLayout->addWidget (archivesPathButton_, 2, 2);
+	gridLayout->addWidget (outPathLabel_, 3, 0);
+	gridLayout->addWidget (outPathEdit_, 3, 1);
+	gridLayout->addWidget (outPathButton_, 3, 2);
 
-	QVBoxLayout *qvblMainLayout = new QVBoxLayout();
-	qvblMainLayout->addLayout (qglGridLayout);
-	qvblMainLayout->addWidget (buttons);
-	setLayout (qvblMainLayout);
+	QVBoxLayout *mainLayout = new QVBoxLayout();
+	mainLayout->addLayout (gridLayout);
+	mainLayout->addWidget (buttons);
+	setLayout (mainLayout);
 }
 
 void Preferences::savePreferences()
@@ -70,46 +70,50 @@ void Preferences::savePreferences()
 
 void Preferences::createConnects()
 {
-	connect (buttons->button (QDialogButtonBox::Apply), SIGNAL (pressed()), this, SLOT (savePreferences()));
-	connect (buttons->button (QDialogButtonBox::Ok), SIGNAL (pressed()), this, SLOT (savePreferences()));
-	connect (buttons->button (QDialogButtonBox::Ok), SIGNAL (pressed()), this, SLOT (accept()));
-	connect (buttons->button (QDialogButtonBox::Cancel), SIGNAL (pressed()), this, SLOT (reject()));
+	connect (buttons->button (QDialogButtonBox::Apply), SIGNAL (pressed()), SLOT (savePreferences()));
+	connect (buttons->button (QDialogButtonBox::Ok), SIGNAL (pressed()), SLOT (savePreferences()));
+	connect (buttons->button (QDialogButtonBox::Ok), SIGNAL (pressed()), SLOT (accept()));
+	connect (buttons->button (QDialogButtonBox::Cancel), SIGNAL (pressed()), SLOT (reject()));
 
-	connect (openPathButton_, SIGNAL (pressed()), this, SLOT (setOpenPath()));
-	connect (importPathButton_, SIGNAL (pressed()), this, SLOT (setImportPath()));
-	connect (archivesPathButton_, SIGNAL (pressed()), this, SLOT (setArchivesPath()));
-	connect (outPathButton_, SIGNAL (pressed()), this, SLOT (setOutPath()));
+	connect (openPathButton_, SIGNAL (pressed()), SLOT (setOpenPath()));
+	connect (importPathButton_, SIGNAL (pressed()), SLOT (setImportPath()));
+	connect (archivesPathButton_, SIGNAL (pressed()), SLOT (setArchivesPath()));
+	connect (outPathButton_, SIGNAL (pressed()), SLOT (setOutPath()));
 }
 
 void Preferences::setOpenPath()
 {
-	QString qsDir = QFileDialog::getExistingDirectory (this, "", openPathEdit_->text());
+	const QString dir = QFileDialog::getExistingDirectory (this, "", openPathEdit_->text());
 
-	if (!qsDir.isEmpty())
-		openPathEdit_->setText (QDir::toNativeSeparators (qsDir));
+	if (!dir.isEmpty()) {
+		openPathEdit_->setText (QDir::toNativeSeparators (dir));
+	}
 }
 
 void Preferences::setImportPath()
 {
-	QString qsDir = QFileDialog::getExistingDirectory (this, "", importPathEdit_->text());
+	const QString dir = QFileDialog::getExistingDirectory (this, "", importPathEdit_->text());
 
-	if (!qsDir.isEmpty())
-		importPathEdit_->setText (QDir::toNativeSeparators (qsDir));
+	if (!dir.isEmpty()) {
+		importPathEdit_->setText (QDir::toNativeSeparators (dir));
+	}
 }
 
 void Preferences::setArchivesPath()
 {
-	QString qsDir = QFileDialog::getExistingDirectory (this, "", archivesPathEdit_->text());
+	const QString dir = QFileDialog::getExistingDirectory (this, "", archivesPathEdit_->text());
 
-	if (!qsDir.isEmpty())
-		archivesPathEdit_->setText (QDir::toNativeSeparators (qsDir));
+	if (!dir.isEmpty()) {
+		archivesPathEdit_->setText (QDir::toNativeSeparators (dir));
+	}
 }
 
 void Preferences::setOutPath()
 {
-	QString qsDir = QFileDialog::getExistingDirectory (this, "", outPathEdit_->text());
+	const QString dir = QFileDialog::getExistingDirectory (this, "", outPathEdit_->text());
 
-	if (!qsDir.isEmpty())
-		outPathEdit_->setText (QDir::toNativeSeparators (qsDir));
+	if (!dir.isEmpty()) {
+		outPathEdit_->setText (QDir::toNativeSeparators (dir));
+	}
 }
 

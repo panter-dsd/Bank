@@ -30,13 +30,13 @@ int main (int argc, char **argv)
 	QStringList args = app.arguments();
 
 	if (args.count() > 1) {
-		QFileInfo qfFile (args.at (1));
+		QFileInfo file (args.at (1));
 
-		if (qfFile.exists()) {
-			if (qfFile.suffix().toLower() == "dbf")
-				win.loadFile (qfFile.absoluteFilePath());
+		if (file.exists()) {
+			if (file.suffix().toLower() == QLatin1String ("dbf"))
+				win.loadFile (file.absoluteFilePath());
 			else
-				win.import (qfFile.absoluteFilePath());
+				win.import (file.absoluteFilePath());
 		}
 	}
 
