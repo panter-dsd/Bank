@@ -435,8 +435,8 @@ bool MainWindowImpl::loadFile (const QString &qsFileName)
 	}
 
 	query.first();
-	QProgressDialog *progressDialog = new QProgressDialog (tr ("Loading wait..."), tr ("No"), 0, query.value (0).toInt() , this);
-	progressDialog->setWindowModality (Qt::WindowModal);
+	QProgressDialog progressDialog (tr ("Loading wait..."), tr ("No"), 0, query.value (0).toInt() , this);
+	progressDialog.setWindowModality (Qt::WindowModal);
 	query.clear();
 
 	query.prepare ("SELECT * FROM " + QFileInfo (qsFileName).baseName());
@@ -454,25 +454,25 @@ bool MainWindowImpl::loadFile (const QString &qsFileName)
 //Read header
 	filialNameEdit_->setText (query.value (0).toString().replace (tr ("#"), tr ("№")));
 	query.next();
-	progressDialog->setValue (progressDialog->value() + 1);
+	progressDialog.setValue (progressDialog.value() + 1);
 	platNumberEdit_->setText (query.value (1).toString());
 	platDateEdit_->setDate (QDate().fromString (query.value (3).toString(), "dd.MM.yyyy"));
 	query.next();
-	progressDialog->setValue (progressDialog->value() + 1);
+	progressDialog.setValue (progressDialog.value() + 1);
 	vidEdit_->setCurrentIndex (query.value (1).toInt() - 1);
 	query.next();
-	progressDialog->setValue (progressDialog->value() + 1);
+	progressDialog.setValue (progressDialog.value() + 1);
 	organizationNameEdit_->setText (query.value (1).toString().replace (tr ("#"), tr ("№")));
 	schetOrganizationEdit_->setText (query.value (2).toString());
 	query.next();
-	progressDialog->setValue (progressDialog->value() + 1);
+	progressDialog.setValue (progressDialog.value() + 1);
 	dogovorNumberEdit_->setText (query.value (1).toString());
 	dogovorDateEdit_->setDate (QDate().fromString (query.value (3).toString(), "dd.MM.yyyy"));
 	query.next();
-	progressDialog->setValue (progressDialog->value() + 1);
+	progressDialog.setValue (progressDialog.value() + 1);
 //End read header
 	table_->setUpdatesEnabled (false);
-	table_->setRowCount (progressDialog->maximum() - 5);
+	table_->setRowCount (progressDialog.maximum() - 5);
 
 	while (query.next()) {
 		item = new QTableWidgetItem (query.value (2).toString());
@@ -487,13 +487,12 @@ bool MainWindowImpl::loadFile (const QString &qsFileName)
 		item->setTextAlignment (Qt::AlignRight | Qt::AlignVCenter);
 		table_->setItem (row, 4, item);
 		row++;
-		progressDialog->setValue (progressDialog->value() + 1);
+		progressDialog.setValue (progressDialog.value() + 1);
 		QCoreApplication::processEvents (QEventLoop::ExcludeUserInputEvents);
 	}
 
-	progressDialog->setValue (progressDialog->maximum());
+	progressDialog.setValue (progressDialog.maximum());
 	QCoreApplication::processEvents (QEventLoop::ExcludeUserInputEvents);
-	delete progressDialog;
 	query.clear();
 	QSqlDatabase::database ().close();
 
