@@ -42,7 +42,7 @@ MainWindowImpl::MainWindowImpl (QWidget *parent, Qt::WFlags f)
 	loadSettings();
 	loadHeader();
 	setConnects();
-	setCurrentFile ("");
+	setCurrentFile (QString::null);
 	updateActions();
 	checkReestr();
 }
@@ -57,32 +57,50 @@ void MainWindowImpl::createControls()
 	setCentralWidget (new QWidget (this));
 //Header
 	headerGroup_ = new QGroupBox (this);
+
 	organizationNameLabel_ = new QLabel (tr ("Organization name, OGRN"), this);
+
 	organizationNameEdit_ = new QLineEdit (this);
 	organizationNameEdit_->setMaxLength (30);
+
 	reestrNumberLabel_ = new QLabel (tr ("Number reestr"), this);
+
 	reestrNumberEdit_ = new QSpinBox (this);
 	reestrNumberEdit_->setRange (1, 999);
 	reestrNumberEdit_->setAlignment (Qt::AlignRight);
+
 	filialNameLabel_ = new QLabel (tr ("Filial name, number"), this);
+
 	filialNameEdit_ = new QLineEdit (this);
 	filialNameEdit_->setMaxLength (30);
+
 	schetOrganizationLabel_ = new QLabel (tr ("Organization schet"), this);
+
 	schetOrganizationEdit_ = new QLineEdit (this);
 	schetOrganizationEdit_->setValidator (new QRegExpValidator (QRegExp ("[0-9]{1,20}"), this));
+
 	dogovorNumberLabel_ = new QLabel (tr ("Number dogovor"), this);
+
 	dogovorNumberEdit_ = new QLineEdit (this);
 	dogovorNumberEdit_->setValidator (new QRegExpValidator (QRegExp ("[0-9]{1,8}"), this));
+
 	dogovorDateLabel_ = new QLabel (tr ("Date dogovor"), this);
+
 	dogovorDateEdit_ = new QDateEdit (this);
 	dogovorDateEdit_->setCalendarPopup (true);
+
 	platNumberLabel_ = new QLabel (tr ("Number plat"), this);
+
 	platNumberEdit_ = new QLineEdit (this);
 	platNumberEdit_->setValidator (new QRegExpValidator (QRegExp ("[0-9]{1,6}"), this));
+
 	platDateLabel_ = new QLabel (tr ("Date plat"), this);
+
 	platDateEdit_ = new QDateEdit (this);
 	platDateEdit_->setCalendarPopup (true);
+
 	vidLabel_ = new QLabel (tr ("Vid oplata"), this);
+
 	vidEdit_ = new QComboBox (this);
 	vidEdit_->addItem (tr ("Заработная плата"));
 	vidEdit_->addItem (tr ("Стипендия учащимся"));
@@ -100,7 +118,7 @@ void MainWindowImpl::createControls()
 
 	QStringList headers;
 	headers << tr ("Famil") << tr ("Name")
-	<< tr ("Otch") << tr ("Schet") << tr ("Money");
+			<< tr ("Otch") << tr ("Schet") << tr ("Money");
 	table_->setHorizontalHeaderLabels (headers);
 
 	statusBar_ = new QStatusBar (this);
@@ -108,6 +126,7 @@ void MainWindowImpl::createControls()
 
 	sumLabel_ = new QLabel (this);
 	statusBar_->addWidget (sumLabel_);
+
 	mainMenu_ = new QMenuBar (this);
 	setMenuBar (mainMenu_);
 }
@@ -279,13 +298,13 @@ void MainWindowImpl::loadSettings()
 {
 	move (applicationSettings_->value ("MainWindow/pos", QPoint (0, 0)).toPoint());
 	resize (applicationSettings_->value ("MainWindow/size", QSize (640, 480)).toSize());
-	bool isMaximized = applicationSettings_->value ("MainWindow/IsMaximized", false).toBool();
+	const bool isMaximized = applicationSettings_->value ("MainWindow/IsMaximized", false).toBool();
 
 	if (isMaximized) {
 		setWindowState (Qt::WindowMaximized);
 	}
 
-	for (int i = 0; i < table_->columnCount(); i++) {
+	for (int i = 0, count = table_->columnCount(); i < count; i++) {
 		table_->setColumnWidth (i, applicationSettings_->value (QString ("MainTableColumns/Column_%1").arg (i), 50).toInt());
 	}
 
@@ -298,10 +317,11 @@ void MainWindowImpl::saveSettings()
 		applicationSettings_->setValue ("MainWindow/pos", pos());
 		applicationSettings_->setValue ("MainWindow/size", size());
 		applicationSettings_->setValue ("MainWindow/IsMaximized", false);
-	} else
+	} else {
 		applicationSettings_->setValue ("MainWindow/IsMaximized", true);
+	}
 
-	for (int i = 0; i < table_->columnCount(); i++) {
+	for (int i = 0, count = table_->columnCount(); i < count; i++) {
 		applicationSettings_->setValue (QString ("MainTableColumns/Column_%1").arg (i), table_->columnWidth (i));
 	}
 
@@ -320,7 +340,9 @@ void MainWindowImpl::import (const QString &qsFileName)
 	}
 
 	table_->clearContents();
+
 	QStringList importList;
+
 	QTextStream stream (&file);
 	stream.setCodec ("IBM 866");
 
@@ -329,7 +351,6 @@ void MainWindowImpl::import (const QString &qsFileName)
 	progress.setWindowModality (Qt::WindowModal);
 
 	while (!stream.atEnd()) {
-		QCoreApplication::processEvents();
 		importList.append (stream.readLine());
 	}
 
@@ -338,24 +359,24 @@ void MainWindowImpl::import (const QString &qsFileName)
 	progress.setMaximum (importList.count());
 	table_->setRowCount (importList.count());
 
-	for (int i = 0; i < importList.count(); i++) {
+	for (int i = 0, count = importList.count(); i < count; i++) {
 		if ( (i / 10) * 10 == i) {
 			progress.setValue (i);
 			QCoreApplication::processEvents();
 		}
 
-		QStringList tmpList = importList[i].split ("|");
+		const QStringList tmpList = importList [i].split ("|");
 
 		if (tmpList.count() != 10) {
 			progress.setValue (progress.maximum());
 			const int result = QMessageBox::critical (this,
-											 tr ("Error"),
-											 QString (tr ("String %1 is not valid\nBreak?")).arg (i + 1),
-											 QMessageBox::Yes | QMessageBox::No);
+							   tr ("Error"),
+							   QString (tr ("String %1 is not valid\nBreak?")).arg (i + 1),
+							   QMessageBox::Yes | QMessageBox::No);
 
-			if (result == QMessageBox::No)
+			if (result == QMessageBox::No) {
 				table_->setRowCount (table_->rowCount() - 1);
-			else {
+			} else {
 				table_->clearContents();
 				table_->setRowCount (0);
 				return;
@@ -374,12 +395,10 @@ void MainWindowImpl::import (const QString &qsFileName)
 			item->setTextAlignment (Qt::AlignRight | Qt::AlignVCenter);
 			table_->setItem (i, 4, item);
 		}
-
-		tmpList.clear();
 	}
 
 	table_->selectRow (0);
-	setCurrentFile ("");
+	setCurrentFile (QString::null);
 	loadHeader();
 	updateActions();
 	checkReestr();
@@ -389,9 +408,9 @@ void MainWindowImpl::openReestr()
 {
 	if (okToContinue()) {
 		const QString fileName = QFileDialog::getOpenFileName (this,
-					 tr ("Open file"),
-					 applicationSettings_->value ("PATH/OpenPath", QString()).toString(),
-					 tr ("DBase files (*.dbf)"));
+								 tr ("Open file"),
+								 applicationSettings_->value ("PATH/OpenPath").toString(),
+								 tr ("DBase files (*.dbf)"));
 
 		if (!fileName.isEmpty()) {
 			applicationSettings_->setValue ("PATH/OpenPath", QFileInfo (fileName).absolutePath());
@@ -404,9 +423,9 @@ void MainWindowImpl::import()
 {
 	if (okToContinue()) {
 		const QString fileName = QFileDialog::getOpenFileName (this,
-					 tr ("Open file"),
-					 applicationSettings_->value ("PATH/ImportPath", QString()).toString(),
-					 tr ("Old format files (*.s??)\nAll files (*.*)"));
+								 tr ("Open file"),
+								 applicationSettings_->value ("PATH/ImportPath").toString(),
+								 tr ("Old format files (*.s??)\nAll files (*.*)"));
 
 		if (!fileName.isEmpty()) {
 			applicationSettings_->setValue ("PATH/ImportPath", QFileInfo (fileName).absolutePath());
@@ -415,10 +434,13 @@ void MainWindowImpl::import()
 	}
 }
 
-bool MainWindowImpl::loadFile (const QString &qsFileName)
+bool MainWindowImpl::loadFile (const QString &fileName)
 {
 	QSqlDatabase::database ().close();
-	QString connectionString = "DRIVER={Microsoft dBase Driver (*.dbf)};FIL={dBase III;};DefaultDir=" + QFileInfo (qsFileName).absolutePath();
+
+	const QString connectionString = "DRIVER={Microsoft dBase Driver (*.dbf)};"
+									 "FIL={dBase III;};DefaultDir="
+									 + QFileInfo (fileName).absolutePath();
 	QSqlDatabase::database ().setDatabaseName (connectionString);
 
 	if (!QSqlDatabase::database ().open()) {
@@ -427,7 +449,7 @@ bool MainWindowImpl::loadFile (const QString &qsFileName)
 	}
 
 	QSqlQuery query;
-	query.prepare ("SELECT COUNT(A) FROM " + QFileInfo (qsFileName).baseName());
+	query.prepare ("SELECT COUNT(A) FROM " + QFileInfo (fileName).baseName());
 
 	if (!query.exec()) {
 		QMessageBox::critical (0, tr ("Error load table"), query.lastError().text());
@@ -437,9 +459,8 @@ bool MainWindowImpl::loadFile (const QString &qsFileName)
 	query.first();
 	QProgressDialog progressDialog (tr ("Loading wait..."), tr ("No"), 0, query.value (0).toInt() , this);
 	progressDialog.setWindowModality (Qt::WindowModal);
-	query.clear();
 
-	query.prepare ("SELECT * FROM " + QFileInfo (qsFileName).baseName());
+	query.prepare ("SELECT * FROM " + QFileInfo (fileName).baseName());
 
 	if (!query.exec()) {
 		QMessageBox::critical (0, tr ("Error load table"), query.lastError().text());
@@ -449,9 +470,11 @@ bool MainWindowImpl::loadFile (const QString &qsFileName)
 	query.first();
 	table_->clearContents();
 	table_->setRowCount (0);
-	QTableWidgetItem *item;
+
+	QTableWidgetItem *item = 0;
 	int row = 0;
-//Read header
+
+	//Read header
 	filialNameEdit_->setText (query.value (0).toString().replace (tr ("#"), tr ("№")));
 	query.next();
 	progressDialog.setValue (progressDialog.value() + 1);
@@ -486,7 +509,7 @@ bool MainWindowImpl::loadFile (const QString &qsFileName)
 		item = new QTableWidgetItem (query.value (5).toString());
 		item->setTextAlignment (Qt::AlignRight | Qt::AlignVCenter);
 		table_->setItem (row, 4, item);
-		row++;
+		++row;
 		progressDialog.setValue (progressDialog.value() + 1);
 		QCoreApplication::processEvents (QEventLoop::ExcludeUserInputEvents);
 	}
@@ -498,7 +521,7 @@ bool MainWindowImpl::loadFile (const QString &qsFileName)
 
 	table_->removeRow (table_->rowCount() - 1);
 	table_->selectRow (0);
-	setCurrentFile (qsFileName);
+	setCurrentFile (fileName);
 	updateActions();
 	checkReestr();
 	table_->setUpdatesEnabled (true);
@@ -518,17 +541,16 @@ bool MainWindowImpl::saveReestr()
 
 	if (checkReestr() == 2) {
 		const int result = QMessageBox::warning (this,
-										tr ("Warning saving"),
-										tr ("Find warnings in reestr.\nSave?"),
-										QMessageBox::Ok,
-										QMessageBox::Cancel);
+						   tr ("Warning saving"),
+						   tr ("Find warnings in reestr.\nSave?"),
+						   QMessageBox::Ok,
+						   QMessageBox::Cancel);
 
 		if (result == QMessageBox::Cancel)
 			return false;
 	}
 
 	return saveFile (currentFile_);
-
 }
 
 bool MainWindowImpl::saveAsReestr()
@@ -540,22 +562,23 @@ bool MainWindowImpl::saveAsReestr()
 
 	if (checkReestr() == 2) {
 		const int result = QMessageBox::warning (this,
-										tr ("Warning saving"),
-										tr ("Find warnings in reestr.\nSave?"),
-										QMessageBox::Ok,
-										QMessageBox::Cancel);
+						   tr ("Warning saving"),
+						   tr ("Find warnings in reestr.\nSave?"),
+						   QMessageBox::Ok,
+						   QMessageBox::Cancel);
 
 		if (result == QMessageBox::Cancel)
 			return false;
 	}
 
 	const QString fileName = QFileDialog::getSaveFileName (this,
-				 tr ("Open file"),
-				 applicationSettings_->value ("PATH/OpenPath", QString()).toString(),
-				 tr ("DBase files (*.dbf)"));
+							 tr ("Open file"),
+							 applicationSettings_->value ("PATH/OpenPath").toString(),
+							 tr ("DBase files (*.dbf)"));
 
-	if (fileName.isEmpty())
+	if (fileName.isEmpty()) {
 		return false;
+	}
 
 	applicationSettings_->setValue ("PATH/OpenPath", QFileInfo (fileName).absolutePath());
 	return saveFile (fileName);
@@ -568,7 +591,10 @@ bool MainWindowImpl::saveFile (const QString &fileName)
 	}
 
 	QSqlDatabase::database ().close();
-	QString connectionString = "DRIVER={Microsoft dBase Driver (*.dbf)};FIL={dBase III;};DefaultDir=" + QFileInfo (fileName).absolutePath();
+
+	const QString connectionString = "DRIVER={Microsoft dBase Driver (*.dbf)};"
+									 "FIL={dBase III;};DefaultDir="
+									 + QFileInfo (fileName).absolutePath();
 	QSqlDatabase::database ().setDatabaseName (connectionString);
 
 	if (!QSqlDatabase::database ().open()) {
@@ -576,9 +602,13 @@ bool MainWindowImpl::saveFile (const QString &fileName)
 		return false;
 	}
 
-	QString tableName = QFileInfo (fileName).baseName();
+	const QString tableName = QFileInfo (fileName).baseName();
+
 	QSqlQuery query;
-	query.prepare ("CREATE TABLE " + tableName + " (A CHAR(30),B CHAR(30),C CHAR(30),D CHAR(30),E CHAR(30),F CHAR(30),G CHAR(30));");
+
+	query.prepare ("CREATE TABLE "
+				   + tableName
+				   + " (A CHAR(30),B CHAR(30),C CHAR(30),D CHAR(30),E CHAR(30),F CHAR(30),G CHAR(30));");
 
 	if (!query.exec()) {
 		QMessageBox::critical (this, tr ("Error save file"), query.lastError().text());
@@ -602,10 +632,9 @@ bool MainWindowImpl::saveFile (const QString &fileName)
 	query.bindValue (":b", platNumberEdit_->text());
 	query.bindValue (":c", tr ("от"));
 
-	if (!platNumberEdit_->text().isEmpty())
-		query.bindValue (":d", platDateEdit_->date().toString ("dd.MM.yyyy"));
-	else
-		query.bindValue (":d", "");
+	query.bindValue (":d",platNumberEdit_->text().isEmpty()
+	? ""
+	: platDateEdit_->date().toString ("dd.MM.yyyy"));
 
 	if (!query.exec()) {
 		QMessageBox::critical (this, tr ("Error save base"), query.lastError().text());
@@ -668,7 +697,7 @@ bool MainWindowImpl::saveFile (const QString &fileName)
 
 	int nullCount = 0;
 
-	for (int i = 0; i < table_->rowCount(); i++) {
+	for (int i = 0, count = table_->rowCount(); i < count; ++i) {
 		if (table_->item (i, 4)->text().toDouble() == 0.00) {
 			++nullCount;
 			continue;
@@ -709,7 +738,7 @@ double MainWindowImpl::getSum()
 {
 	double sum = 0;
 
-	for (int i = 0; i < table_->rowCount(); i++) {
+	for (int i = 0, count = table_->rowCount(); i < count; ++i) {
 		sum += table_->item (i, 4)->text().toDouble();
 	}
 
@@ -719,7 +748,8 @@ double MainWindowImpl::getSum()
 void MainWindowImpl::updateActions()
 {
 	sumLabel_->setText (tr ("Count = %1 Summa = %2").arg (table_->rowCount()).arg (getSum(), 0, 'f', 2));
-	bool isEmptyTable = ( (table_->rowCount() > 0) && (table_->currentRow() > -1));
+	const bool isEmptyTable = ( (table_->rowCount() > 0)
+	&& (table_->currentRow() > -1));
 	actionEdit_->setEnabled (isEmptyTable);
 	actionChangeMoney_->setEnabled (isEmptyTable);
 	actionDelete_->setEnabled (isEmptyTable);
@@ -735,7 +765,7 @@ void MainWindowImpl::addRecord()
 
 	if (addDialog.exec()) {
 		table_->insertRow (table_->rowCount());
-		int row = table_->rowCount() - 1;
+		const int row = table_->rowCount() - 1;
 		QTableWidgetItem *item;
 		item = new QTableWidgetItem (addDialog.familEdit_->text());
 		table_->setItem (row, 0, item);
@@ -758,7 +788,7 @@ void MainWindowImpl::addRecord()
 
 void MainWindowImpl::editRecord()
 {
-	int row = table_->currentRow();
+	const int row = table_->currentRow();
 
 	if (row < 0)
 		return;
@@ -787,15 +817,17 @@ void MainWindowImpl::editRecord()
 
 void MainWindowImpl::deleteRecord()
 {
-	int row = table_->currentRow();
+	const int row = table_->currentRow();
 
-	if (row < 0)
+	if (row < 0) {
 		return;
+	}
 
 	table_->removeRow (row);
 
-	if (table_->currentIndex().isValid())
+	if (table_->currentIndex().isValid()) {
 		table_->selectRow (table_->currentIndex().row());
+	}
 
 	setWindowModified (true);
 	updateActions();
@@ -804,10 +836,11 @@ void MainWindowImpl::deleteRecord()
 
 void MainWindowImpl::changeMoney()
 {
-	int row = table_->currentRow();
+	const int row = table_->currentRow();
 
-	if (row < 0)
+	if (row < 0) {
 		return;
+	}
 
 	AddDialog dialog (this);
 	dialog.setWindowTitle (tr ("Changing money"));
@@ -833,7 +866,7 @@ void MainWindowImpl::changeMoney()
 
 void MainWindowImpl::nullMoney()
 {
-	for (int i = 0; i < table_->rowCount(); i++) {
+	for (int i = 0, count = table_->rowCount(); i < count; ++i) {
 		table_->item (i, 4)->setText ("0.00");
 	}
 
@@ -849,37 +882,44 @@ int MainWindowImpl::checkReestr()
 	if (organizationNameEdit_->text().isEmpty()) {
 		setErrorPalette (organizationNameEdit_);
 		isValid = 1;
-	} else
+	} else {
 		organizationNameEdit_->setPalette (QApplication::palette());
+	}
 
 	if (filialNameEdit_->text().isEmpty()) {
 		setErrorPalette (filialNameEdit_);
 		isValid = 1;
-	} else
+	} else {
 		filialNameEdit_->setPalette (QApplication::palette());
+	}
 
 	if ( (schetOrganizationEdit_->text().isEmpty()) || (schetOrganizationEdit_->text().count() != 20)) {
 		setErrorPalette (schetOrganizationEdit_);
 		isValid = 1;
-	} else
+	} else {
 		schetOrganizationEdit_->setPalette (QApplication::palette());
+	}
 
 	if ( (dogovorNumberEdit_->text().isEmpty()) || (dogovorNumberEdit_->text().count() != 8)) {
 		setErrorPalette (dogovorNumberEdit_);
 		isValid = 1;
-	} else
+	} else {
 		dogovorNumberEdit_->setPalette (QApplication::palette());
+	}
 
 	if ( (platNumberEdit_->text().isEmpty()) || (platNumberEdit_->text().count() != 6)) {
 		setWarningPalette (platNumberEdit_);
 
-		if (isValid == 0)
+		if (isValid == 0) {
 			isValid = 2;
-	} else
+	}
+	} else {
 		platNumberEdit_->setPalette (QApplication::palette());
+	}
 
-	if (table_->rowCount() <= 0)
+	if (table_->rowCount() <= 0) {
 		isValid = 1;
+	}
 
 	for (int i = 0; i < table_->rowCount(); i++) {
 		if (table_->item (i, 0)->text().isEmpty()) { //Famil
@@ -892,28 +932,33 @@ int MainWindowImpl::checkReestr()
 		if (table_->item (i, 1)->text().isEmpty()) { //Name
 			table_->item (i, 1)->setBackgroundColor (Qt::red);
 			isValid = 1;
-		} else
+		} else {
 			table_->item (i, 1)->setBackgroundColor (Qt::white);
+		}
 
 		if (table_->item (i, 2)->text().isEmpty()) { //Otch
 			table_->item (i, 2)->setBackgroundColor (Qt::yellow);
 
-			if (isValid == 0)
+			if (isValid == 0) {
 				isValid = 2;
-		} else
+			}
+		} else {
 			table_->item (i, 2)->setBackgroundColor (Qt::white);
+		}
 
 		if (!checkSchet (table_->item (i, 3)->text())) { //Schet
 			table_->item (i, 3)->setBackgroundColor (Qt::red);
 			isValid = 1;
-		} else
+		} else {
 			table_->item (i, 3)->setBackgroundColor (Qt::white);
+		}
 
 		if ( (table_->item (i, 4)->text().isEmpty()) || (table_->item (i, 4)->text().toDouble() < 0)) { //Money
 			table_->item (i, 4)->setBackgroundColor (Qt::red);
 			isValid = 1;
-		} else
+		} else {
 			table_->item (i, 4)->setBackgroundColor (Qt::white);
+		}
 	}
 
 	return isValid;
@@ -921,16 +966,8 @@ int MainWindowImpl::checkReestr()
 
 bool MainWindowImpl::checkSchet (const QString &schet)
 {
-	if (schet.length() != 20)
-		return false;
-
-	if (schet.mid (5, 3) != "810")
-		return false;
-
-	if (schet.mid (9, 4) != dogovorNumberEdit_->text().mid (0, 4))
-		return false;
-
-	return true;
+	return schet.length() == 20
+	&& schet.mid (5, 3) == QLatin1String ("810");
 }
 
 void MainWindowImpl::saveHeader()
@@ -956,10 +993,11 @@ void MainWindowImpl::loadHeader()
 
 void MainWindowImpl::closeEvent (QCloseEvent *event)
 {
-	if (okToContinue())
+	if (okToContinue()) {
 		event->accept();
-	else
+	} else {
 		event->ignore();
+	}
 }
 
 void MainWindowImpl::createContextMenu()
@@ -997,17 +1035,19 @@ bool MainWindowImpl::okToContinue()
 {
 	if (isWindowModified()) {
 		const int result = QMessageBox::warning (this,
-										QApplication::applicationName(),
-										tr ("The reestr has been modified.\nDo you want to save your changes?"),
-										QMessageBox::Yes | QMessageBox::Default,
-										QMessageBox::No,
-										QMessageBox::Cancel);
+						   QApplication::applicationName(),
+						   tr ("The reestr has been modified.\nDo you want to save your changes?"),
+						   QMessageBox::Yes | QMessageBox::Default,
+						   QMessageBox::No,
+						   QMessageBox::Cancel);
 
-		if (result == QMessageBox::Yes)
+		if (result == QMessageBox::Yes) {
 			return saveReestr();
+		}
 
-		if (result == QMessageBox::Cancel)
+		if (result == QMessageBox::Cancel) {
 			return false;
+		}
 	}
 
 	return true;
@@ -1018,7 +1058,7 @@ void MainWindowImpl::newReestr()
 	if (okToContinue()) {
 		table_->clearContents();
 		table_->setRowCount (0);
-		setCurrentFile ("");
+		setCurrentFile (QString::null);
 	}
 }
 
@@ -1026,10 +1066,9 @@ void MainWindowImpl::setCurrentFile (const QString &fileName)
 {
 	currentFile_ = fileName;
 	setWindowModified (false);
-	QString showName = tr ("Untitled");
-
-	if (!currentFile_.isEmpty())
-		showName = QFileInfo (currentFile_).fileName();
+	const QString showName = currentFile_.isEmpty()
+	? tr ("Untitled")
+	: QFileInfo (currentFile_).fileName();
 
 	setWindowTitle (tr ("%1 %2[*]").arg (QApplication::applicationName()).arg (showName));
 	updateActions();
@@ -1054,13 +1093,14 @@ void MainWindowImpl::out()
 
 	if (checkReestr() == 2) {
 		const int result = QMessageBox::warning (this,
-										tr ("Warning saving"),
-										tr ("Find warnings in reestr.\nSave?"),
-										QMessageBox::Ok,
-										QMessageBox::Cancel);
+						   tr ("Warning saving"),
+						   tr ("Find warnings in reestr.\nSave?"),
+						   QMessageBox::Ok,
+						   QMessageBox::Cancel);
 
-		if (result == QMessageBox::Cancel)
+		if (result == QMessageBox::Cancel) {
 			return;
+		}
 	}
 
 	QDir dir (applicationSettings_->value ("PATH/ArchivesPath", QString()).toString());
@@ -1071,28 +1111,28 @@ void MainWindowImpl::out()
 		dir.cd ("archives");
 	}
 
-	bool isModified = isWindowModified();
-	QString curFile = currentFile_;
+	const bool isModified = isWindowModified();
+	const QString curFile = currentFile_;
 	QFileInfo outFile (dir.absolutePath() +
-						  "/" +
-						  QDate::currentDate().toString ("yyMMdd") +
-						  QTime::currentTime().toString ("ss") +
-						  ".dbf");
+					   "/" +
+					   QDate::currentDate().toString ("yyMMdd") +
+					   QTime::currentTime().toString ("ss") +
+					   ".dbf");
 
 	if (saveFile (outFile.filePath())) {
 		setCurrentFile (curFile);
 		setWindowModified (isModified);
 		const QString outName = applicationSettings_->value ("PATH/OutPath", QString()).toString() +
-							QDir::separator() +
-							"t1820" +
-							QString ("%1").arg (reestrNumberEdit_->value(), 3, 10, QChar ('0')) +
-							".dbf";
+								QDir::separator() +
+								"t1820" +
+								QString ("%1").arg (reestrNumberEdit_->value(), 3, 10, QChar ('0')) +
+								".dbf";
 
-		if (!QFile::copy (outFile.filePath(), outName))
+		if (!QFile::copy (outFile.filePath(), outName)) {
 			QMessageBox::warning (this,
 								  tr ("Error out"),
 								  tr ("Error out file %1").arg (outName));
-		else {
+		} else {
 			QMessageBox::information (this,
 									  tr ("Out"),
 									  tr ("Out is suxcessed"));
